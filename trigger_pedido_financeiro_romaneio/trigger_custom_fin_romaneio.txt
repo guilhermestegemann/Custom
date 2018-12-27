@@ -1,0 +1,24 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_custom_fin_romaneio for financeiro
+active before insert position 0
+AS
+BEGIN
+     IF ((NEW.DOCUMENTO IS NOT NULL) AND (POSITION(NEW.DOCUMENTO||'P', NEW.ORDEM) > 0)) THEN BEGIN
+         SELECT MAX(ROMANEIO)
+         FROM (
+             SELECT IRP.ROMANEIO AS ROMANEIO
+             FROM PEDIDO
+             LEFT JOIN ITEMROMANEIO IRP ON IRP.TIPO = 'P'
+                                       AND IRP.NUMERO = PEDIDO.NUMERO
+             WHERE (PEDIDO.NUMERO = NEW.DOCUMENTO
+                 AND PEDIDO.FILIAL = NEW.FILIAL
+                 AND PEDIDO.CLIFOR = NEW.CLIFOR
+                 AND PEDIDO.EMISSAO = NEW.DATAEMISSAO)
+                 AND (IRP.ROMANEIO IS NOT NULL)
+         ) INTO NEW.ROMANEIO;
+     END
+END^
+
+SET TERM ; ^
+
