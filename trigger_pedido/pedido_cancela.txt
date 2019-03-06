@@ -129,20 +129,20 @@ BEGIN
                     SELECT FINANCEIRO.CAIXA FROM FINANCEIRO
                     WHERE FINANCEIRO.ORDEM = :VORDEM
                     AND FINANCEIRO.CLIFOR = NEW.CLIFOR
-                    AND FINANCEIRO.DATAEMISSAO = NEW.EMISSAO
+                    AND FINANCEIRO.DATAEMISSAO = NEW.ENTREGA
                     INTO :VCAIXA;
                     IF (:VCAIXA > 0) THEN BEGIN
                        UPDATE FINANCEIRO SET FINANCEIRO.CAIXA = NULL
                        WHERE FINANCEIRO.ORDEM = :VORDEM
                        AND FINANCEIRO.CLIFOR = NEW.CLIFOR
-                       AND FINANCEIRO.DATAEMISSAO = NEW.EMISSAO;
+                       AND FINANCEIRO.DATAEMISSAO = NEW.ENTREGA;
                        DELETE FROM CAIXA
                        WHERE CAIXA.CODIGO = :VCAIXA;
                     END
                     DELETE FROM FINANCEIRO
                     WHERE FINANCEIRO.ORDEM = :VORDEM
                     AND FINANCEIRO.CLIFOR = NEW.CLIFOR
-                    AND FINANCEIRO.DATAEMISSAO = NEW.EMISSAO;
+                    AND FINANCEIRO.DATAEMISSAO = NEW.ENTREGA;
                 END
              END
           END
