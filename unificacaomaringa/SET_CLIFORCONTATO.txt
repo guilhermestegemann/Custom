@@ -1,0 +1,47 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setcliforcontato (
+    clifor varchar(18),
+    numero varchar(16),
+    nome varchar(40),
+    email varchar(60),
+    enviarnfe varchar(1),
+    enviardanfe varchar(1),
+    enviarboleto varchar(1),
+    enviarpedido varchar(1),
+    filial integer)
+as
+declare variable varclifor integer;
+BEGIN
+    SELECT CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    AND CLIFOR.FILIAL = :FILIAL
+    INTO :VARCLIFOR;
+    IF (:VARCLIFOR IS NOT NULL) THEN
+        INSERT INTO CLIFORCONTATO
+        (
+            CLIFOR,
+            NUMERO,
+            NOME,
+            EMAIL,
+            ENVIARNFE,
+            ENVIARDANFE,
+            ENVIARBOLETO,
+            ENVIARPEDIDO
+        ) VALUES
+        (
+            :VARCLIFOR,
+            :NUMERO,
+            :NOME,
+            :EMAIL,
+            :ENVIARNFE, 
+            :ENVIARDANFE,
+            :ENVIARBOLETO,
+            :ENVIARPEDIDO
+        );
+
+END^
+
+SET TERM ; ^
+

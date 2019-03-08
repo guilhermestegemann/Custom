@@ -1,0 +1,35 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setrotaclifor (
+    rota integer,
+    clifor varchar(18),
+    ordem integer)
+as
+declare variable varclifor integer;
+BEGIN
+    ROTA = 100||:ROTA;
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARCLIFOR;
+    IF (:VARCLIFOR IS NULL) THEN
+        EXCEPTION EXCEPTION_VALORCAMPO'CNPJ: '||:CLIFOR;
+
+    INSERT INTO ROTACLIFOR
+    (
+        ROTA,
+        CLIFOR,
+        ORDEM
+    ) VALUES
+    (
+        :ROTA,
+        :VARCLIFOR,
+        :ORDEM
+    );
+
+        
+END^
+
+SET TERM ; ^
+

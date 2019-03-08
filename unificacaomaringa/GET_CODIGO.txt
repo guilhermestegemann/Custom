@@ -1,0 +1,37 @@
+﻿CREATE OR ALTER PROCEDURE GET_CODIGO (
+    tabela domain_varchar20)
+returns (
+    retorno domain_inteiro)
+as
+declare variable cont integer;
+BEGIN
+    SELECT COUNT(*) FROM CODIGO
+    WHERE CODIGO.TABELA = :TABELA
+    INTO :CONT;
+
+    IF (CONT = 1) THEN BEGIN
+
+        SELECT CODIGO.CODIGO
+        FROM CODIGO
+        WHERE CODIGO.TABELA = :TABELA
+        INTO :RETORNO;
+
+        UPDATE CODIGO
+        SET CODIGO.CODIGO = :RETORNO +1
+        WHERE CODIGO.TABELA = :TABELA;
+
+    END ELSE BEGIN
+
+        SELECT FIRST 1 CODIGO.CODIGO
+        FROM CODIGO
+        WHERE CODIGO.TABELA = :TABELA
+        ORDER BY CODIGO.CODIGO
+        INTO :RETORNO;
+    
+        DELETE FROM CODIGO
+        WHERE CODIGO.TABELA = :TABELA
+        AND CODIGO.CODIGO = :RETORNO;
+
+    END
+    SUSPEND;
+END

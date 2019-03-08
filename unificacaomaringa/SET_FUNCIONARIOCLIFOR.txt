@@ -1,0 +1,19 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setfuncionarioclifor (
+    funcionario integer,
+    clifor varchar(18))
+as
+declare variable varclifor integer;
+BEGIN
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    ORDER BY ATIVO DESC
+    INTO :VARCLIFOR;
+    IF (:VARCLIFOR IS NOT NULL) THEN
+        UPDATE OR INSERT INTO FUNCIONARIOCLIFOR (FUNCIONARIO, CLIFOR) VALUES (:FUNCIONARIO, :VARCLIFOR) MATCHING (FUNCIONARIO, CLIFOR);
+END^
+
+SET TERM ; ^
+

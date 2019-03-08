@@ -1,0 +1,39 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setclifortabelapreco (
+    clifor varchar(18),
+    tabelapreco integer,
+    padrao varchar(1))
+as
+declare variable varclifor integer;
+declare variable contclifortabelapreco integer;
+BEGIN
+    TABELAPRECO = 10||:TABELAPRECO;
+    FOR
+        SELECT CLIFOR.CODIGO
+        FROM CLIFOR
+        WHERE CLIFOR.CNPJ = :CLIFOR
+        INTO :VARCLIFOR
+    DO BEGIN
+        SELECT COUNT(*)
+        FROM CLIFORTABELAPRECO
+        WHERE CLIFORTABELAPRECO.CLIFOR = :VARCLIFOR
+        AND CLIFORTABELAPRECO.TABELAPRECO = :TABELAPRECO
+        INTO :CONTCLIFORTABELAPRECO;
+        IF (:CONTCLIFORTABELAPRECO = 0) THEN
+            INSERT INTO CLIFORTABELAPRECO
+            (
+                CLIFOR,
+                TABELAPRECO,
+                PADRAO
+            ) VALUES
+            (
+                :VARCLIFOR,
+                :TABELAPRECO,
+                :PADRAO
+            );
+    END
+END^
+
+SET TERM ; ^
+

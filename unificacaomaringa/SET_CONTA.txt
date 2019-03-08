@@ -1,0 +1,33 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setconta (
+    codigo integer,
+    nome varchar(40),
+    filial integer,
+    gerasaldo varchar(1),
+    agencia varchar(10),
+    conta varchar(10))
+as
+BEGIN
+    CODIGO = 10||:CODIGO;
+    INSERT INTO CONTA
+    (
+        CODIGO,
+        NOME,
+        FILIAL,
+        GERASALDO,
+        AGENCIA,
+        CONTA
+    ) VALUES
+    (
+        :CODIGO,
+        :NOME,
+        :FILIAL, 
+        :GERASALDO,
+        :AGENCIA,
+        :CONTA
+    );
+END^
+
+SET TERM ; ^
+

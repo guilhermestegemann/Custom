@@ -1,0 +1,170 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setclifor (
+    codigo integer,
+    filial integer,
+    tipo integer,
+    nome varchar(60),
+    fantasia varchar(60),
+    cnpj varchar(18),
+    ie varchar(15),
+    endereco varchar(60),
+    complemento varchar(60),
+    referencia varchar(100),
+    cep varchar(8),
+    bairro varchar(40),
+    cidade varchar(7),
+    tipoestabelecimento integer,
+    data date,
+    limitecredito numeric(8,2),
+    ativo varchar(1),
+    datanasc date,
+    datamovimento date,
+    bloquearvenda varchar(1),
+    datainativado date,
+    rapel numeric(8,2),
+    isento varchar(1),
+    cnpjvalido varchar(1),
+    ievalido varchar(1),
+    numero varchar(10),
+    publica varchar(1),
+    comissao numeric(8,2),
+    simples varchar(1),
+    latitude varchar(15),
+    longitude varchar(15),
+    spc varchar(1),
+    enviarremessa varchar(1),
+    categoria integer,
+    mei varchar(1),
+    consumidor varchar(1),
+    indicadorie integer,
+    destacarstitem varchar(1))
+as
+declare variable varcidade integer;
+declare variable varbairro integer;
+declare variable contclifor integer;
+BEGIN
+    /*VERIFICAR SE CLIENTE JA EXISTE NA TABELA */
+    SELECT COUNT(*)
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CNPJ
+    INTO :CONTCLIFOR;
+    IF (:CONTCLIFOR = 0) THEN
+    BEGIN
+        /*VERIFICA CODIGO DO CLIFOR PRA VER SE JA NAO EXISTE REGISTRO */
+        SELECT COUNT(*)
+        FROM CLIFOR
+        WHERE CLIFOR.CODIGO = :CODIGO
+        INTO :CONTCLIFOR;
+        IF (:CONTCLIFOR > 0) THEN
+            SELECT RETORNO
+            FROM GET_CODIGO('CLIFOR')
+            INTO :CODIGO;
+        /* SELECIONA CIDADE */
+        SELECT FIRST 1 CIDADE.CODIGO
+        FROM CIDADE
+        WHERE CIDADE.CODIGOFISCAL = :CIDADE
+        INTO :VARCIDADE;
+    
+        /*SELECIONA BAIRRO*/
+        SELECT FIRST 1 BAIRRO.CODIGO
+        FROM BAIRRO
+        WHERE BAIRRO.NOME = :BAIRRO
+        INTO :VARBAIRRO;
+        IF (:VARBAIRRO IS NULL) THEN
+        BEGIN
+            SELECT RETORNO
+            FROM GET_CODIGO('BAIRRO')
+            INTO :VARBAIRRO;
+            INSERT INTO BAIRRO (CODIGO, NOME) VALUES (:VARBAIRRO, :BAIRRO);
+        END
+        INSERT INTO CLIFOR
+        (
+            CODIGO,
+            FILIAL, 
+            TIPO,
+            NOME,
+            FANTASIA,
+            CNPJ,
+            IE,
+            ENDERECO,
+            COMPLEMENTO,
+            REFERENCIA,
+            CEP,
+            BAIRRO,
+            CIDADE, 
+            TIPOESTABELECIMENTO,
+            DATA,
+            LIMITECREDITO,
+            ATIVO,
+            DATANASC,
+            DATAMOVIMENTO,
+            BLOQUEARVENDA,
+            DATAINATIVADO,
+            RAPEL,
+            ISENTO,
+            CNPJVALIDO,
+            IEVALIDO,
+            NUMERO,
+            PUBLICA,
+            COMISSAO,
+            SIMPLES,
+            LATITUDE,
+            LONGITUDE,
+            SPC,
+            ENVIARREMESSA,
+            CATEGORIA,
+            MEI,
+            CONSUMIDOR,
+            INDICADORIE,
+            DESTACARSTITEM,
+            VENDARESTRITA,
+            COMISSAOFIXA
+        ) VALUES
+        (
+            :CODIGO,
+            :FILIAL,
+            :TIPO, 
+            :NOME,
+            :FANTASIA,
+            :CNPJ,
+            :IE,
+            :ENDERECO, 
+            :COMPLEMENTO,
+            :REFERENCIA, 
+            :CEP,
+            :VARBAIRRO,
+            :VARCIDADE,
+            :TIPOESTABELECIMENTO,
+            :DATA,
+            :LIMITECREDITO,
+            :ATIVO,
+            :DATANASC,
+            :DATAMOVIMENTO, 
+            :BLOQUEARVENDA,
+            :DATAINATIVADO, 
+            :RAPEL,
+            :ISENTO,
+            :CNPJVALIDO,
+            :IEVALIDO,
+            :NUMERO,
+            :PUBLICA,
+            :COMISSAO,
+            :SIMPLES,
+            :LATITUDE,
+            :LONGITUDE,
+            :SPC,
+            :ENVIARREMESSA, 
+            :CATEGORIA, 
+            :MEI,
+            :CONSUMIDOR,
+            :INDICADORIE, 
+            :DESTACARSTITEM,
+            'N',
+            'N'
+        );
+    END
+END^
+
+SET TERM ; ^
+
