@@ -1,0 +1,145 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_bi_fornecedor for nf
+active before update position 89
+AS
+DECLARE VARIABLE TERMINAL INTEGER;
+DECLARE VARIABLE SCRIPT VARCHAR(4096);
+DECLARE VARIABLE GERARCOMPRA VARCHAR(1);
+DECLARE VARIABLE CNPJCPFFORNECEDOR VARCHAR(18);
+DECLARE VARIABLE IEFORNECEDOR VARCHAR(15);
+DECLARE VARIABLE CIDADE VARCHAR(7);
+DECLARE VARIABLE CNPJVALIDO VARCHAR(1);
+DECLARE VARIABLE NOMEFORNECEDOR VARCHAR(60);
+BEGIN
+    IF ((NEW.ORIGEM = 'T') AND (OLD.ATUALIZADA = 'N') AND (NEW.ATUALIZADA = 'S')) THEN
+    BEGIN
+        SELECT TIPOCFOP.GERARCOMPRA, CLIFOR.NOME, CLIFOR.CNPJ, CLIFOR.CNPJVALIDO, CLIFOR.IE, CIDADE.CODIGOFISCAL
+        FROM TIPOCFOP
+        INNER JOIN CLIFOR ON CLIFOR.CODIGO = NEW.CLIFOR
+        INNER JOIN CIDADE ON CIDADE.CODIGO = CLIFOR.CIDADE
+        WHERE TIPOCFOP.CODIGO = NEW.TIPOCFOP
+            AND TIPOCFOP.FATURA = 'E'
+            AND TIPOCFOP.GERARESTOQUE = 'S'
+            AND TIPOCFOP.DEVOLUCAO = 'N'
+        INTO :GERARCOMPRA, :NOMEFORNECEDOR, :CNPJCPFFORNECEDOR, :CNPJVALIDO, :IEFORNECEDOR, :CIDADE;
+        IF (:GERARCOMPRA = 'S') THEN
+        BEGIN
+            FOR
+                SELECT TERMINAL.CODIGO
+                FROM TERMINAL
+                WHERE ((TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'B') AND (TERMINAL.FILIAL = NEW.FILIAL))
+                INTO :TERMINAL
+            DO BEGIN
+                SCRIPT = 'EXECUTE PROCEDURE '
+                    || 'SET_BI_FORNECEDOR'
+                    || '(' || CASE WHEN(:CNPJVALIDO = 'S') THEN '''' || :CNPJCPFFORNECEDOR || '''' ELSE 'NULL' END
+                    || ', ' || CASE WHEN(:CNPJVALIDO = 'N') THEN '''' || CNPJCPFFORNECEDOR || '''' ELSE 'NULL' END
+                    || ', ' || CASE WHEN(:CNPJVALIDO = 'S') THEN CASE WHEN(:IEFORNECEDOR IS NOT NULL) THEN '''' || :IEFORNECEDOR || '''' ELSE 'NULL' END ELSE 'NULL' END
+                    || ', ' || CASE WHEN(:CNPJVALIDO = 'N') THEN CASE WHEN(:IEFORNECEDOR IS NOT NULL) THEN '''' || :IEFORNECEDOR || '''' ELSE 'NULL' END ELSE 'NULL' END
+                    || ', ' || '''' || REPLACE(:NOMEFORNECEDOR,'''',' ') || ''''
+                    || ', ' || '''' || :CIDADE || ''''
+                    || ')';
+                INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+            END
+        END
+    END
+END^
+
+SET TERM ; ^
+
+
+
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure procedure_analytics_bi_compra (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    clifor integer)
+as
+declare variable item integer;
+declare variable distribuidor varchar(18);
+declare variable data date;
+declare variable documento integer;
+declare variable produto integer;
+declare variable quantidade double precision;
+declare variable valorunitario double precision;
+declare variable valordesconto double precision;
+declare variable fornecedor varchar(18);
+declare variable terminal integer;
+declare variable script varchar(4096);
+BEGIN
+    FOR
+        SELECT ITEMNF.ITEM, FILIAL.CNPJ
+        , NF.EMISSAO
+        , ITEMNF.NUMERO
+        , ITEMNF.PRODUTO
+        , ITEMNF.QTDE
+        , ITEMNF.UNITARIO
+        , ITEMNF.VALORDESCONTO
+        , CLIFOR.CNPJ
+        , TERMINAL.CODIGO
+        FROM ITEMNF
+
+        INNER JOIN NF ON NF.NUMERO = ITEMNF.NUMERO AND NF.SERIE = ITEMNF.SERIE AND NF.FILIAL = ITEMNF.FILIAL AND NF.ORIGEM = ITEMNF.ORIGEM AND NF.CLIFOR = ITEMNF.CLIFOR
+        INNER JOIN TIPOCFOP ON TIPOCFOP.CODIGO = NF.TIPOCFOP AND TIPOCFOP.FATURA = 'E' AND TIPOCFOP.GERARESTOQUE = 'S' AND TIPOCFOP.DEVOLUCAO = 'N' AND TIPOCFOP.GERARCOMPRA = 'S'
+        INNER JOIN FILIAL ON FILIAL.CODIGO = ITEMNF.FILIAL
+        INNER JOIN CLIFOR ON CLIFOR.CODIGO = ITEMNF.CLIFOR
+
+        INNER JOIN TERMINAL ON TERMINAL.FILIAL = FILIAL.CODIGO AND TERMINAL.TIPOREPLICACAO = 'B' AND TERMINAL.ATIVO = 'S'
+
+        WHERE ITEMNF.NUMERO = :NUMERO
+        AND ITEMNF.SERIE = :SERIE
+        AND ITEMNF.FILIAL = :FILIAL
+        AND ITEMNF.ORIGEM = 'T'
+        AND ITEMNF.CLIFOR = :CLIFOR
+
+        INTO :ITEM, :DISTRIBUIDOR
+        , :DATA, :DOCUMENTO
+        , :PRODUTO, :QUANTIDADE, :VALORUNITARIO, :VALORDESCONTO
+        , :FORNECEDOR, :TERMINAL
+    DO BEGIN
+        SCRIPT = 'EXECUTE PROCEDURE '
+              || 'SET_BI_COMPRA'
+              || '(' || :ITEM
+              || ', ' || '''' || :DISTRIBUIDOR || ''''
+              || ', ' || '''' || :DATA || ''''
+              || ', ' || :DOCUMENTO
+              || ', ' || :PRODUTO
+              || ', ' || :QUANTIDADE
+              || ', ' || :VALORUNITARIO
+              || ', ' || :VALORDESCONTO
+              || ', ' || '''' || :FORNECEDOR || ''''
+              || ')';
+        INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+    END
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_bi_compra for nf
+active before update position 91
+AS
+DECLARE VARIABLE GERARCOMPRA VARCHAR(1);
+BEGIN
+    IF (NEW.ORIGEM = 'T') THEN
+        IF ((OLD.ATUALIZADA = 'N') AND (NEW.ATUALIZADA = 'S')) THEN BEGIN
+            SELECT TIPOCFOP.GERARCOMPRA
+            FROM TIPOCFOP
+            WHERE TIPOCFOP.CODIGO = NEW.TIPOCFOP
+                AND TIPOCFOP.FATURA = 'E'
+                AND TIPOCFOP.GERARESTOQUE = 'S'
+                AND TIPOCFOP.DEVOLUCAO = 'N'
+            INTO :GERARCOMPRA;
+            IF (:GERARCOMPRA = 'S') THEN
+                EXECUTE PROCEDURE PROCEDURE_ANALYTICS_BI_COMPRA(NEW.NUMERO, NEW.SERIE, NEW.FILIAL, NEW.CLIFOR);
+        END
+END^
+
+SET TERM ; ^
+

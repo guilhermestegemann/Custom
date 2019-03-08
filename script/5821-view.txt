@@ -1,0 +1,32 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_financeiro_romaneio for financeiro
+active before insert position 0
+AS
+BEGIN
+     IF (NEW.DOCUMENTO IS NOT NULL) THEN BEGIN
+         SELECT MAX(ROMANEIO)
+         FROM (
+             SELECT CASE WHEN(IRN.ROMANEIO IS NULL) THEN IRP.ROMANEIO ELSE IRN.ROMANEIO END AS ROMANEIO
+             FROM NF
+             LEFT JOIN PEDIDO ON PEDIDO.NUMERO = NF.PEDIDO
+                             AND PEDIDO.FILIAL = NF.FILIALPEDIDO
+
+             LEFT JOIN ITEMROMANEIO IRP ON IRP.TIPO = 'P'
+                                       AND IRP.NUMERO = PEDIDO.NUMERO
+             LEFT JOIN ITEMROMANEIO IRN ON IRN.TIPO = 'N'
+                                       AND IRN.NUMERO = NF.NUMERO
+                                       AND IRN.SERIE = NF.SERIE
+             LEFT JOIN ROMANEIO ON ((ROMANEIO.CODIGO = IRN.ROMANEIO) OR (ROMANEIO.CODIGO = IRP.ROMANEIO)) AND ROMANEIO.FILIAL = NEW.FILIAL
+             WHERE ( NF.NUMERO = NEW.DOCUMENTO
+                 AND NF.FILIAL = NEW.FILIAL
+                 AND NF.CLIFOR = NEW.CLIFOR
+                 AND NF.EMISSAO = NEW.DATAEMISSAO
+                 AND NF.ORIGEM = 'P')
+             AND ((IRP.ROMANEIO IS NOT NULL) OR (IRN.ROMANEIO IS NOT NULL))
+             AND ROMANEIO.FILIAL = NEW.FILIAL
+         ) INTO NEW.ROMANEIO;
+     END
+END^
+
+SET TERM ; ^

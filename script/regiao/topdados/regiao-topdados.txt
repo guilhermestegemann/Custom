@@ -1,0 +1,57 @@
+﻿ALTER TABLE REGIAO
+ADD REPLICAR DOMAIN_SNNULL;
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_regiao_biu for regiao
+active before insert or update position 0
+AS
+BEGIN
+    NEW.REPLICAR = 'S';
+END^
+
+SET TERM ; ^
+
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_regiao_replicar for regiao
+active before insert or update position 99
+AS
+BEGIN
+    NEW.REPLICAR = 'N';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_bi_regiao for regiao
+active before insert or update position 10
+AS
+DECLARE VARIABLE TERMINAL INTEGER;
+DECLARE VARIABLE SCRIPT VARCHAR(4096);
+DECLARE VARIABLE DISTRIBUIDOR VARCHAR(18);
+BEGIN
+    FOR
+        SELECT TERMINAL.CODIGO, FILIAL.CNPJ
+        FROM TERMINAL
+        INNER JOIN FILIAL ON FILIAL.CODIGO = TERMINAL.FILIAL
+        WHERE ((NEW.REPLICAR = 'S') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'B') AND (TERMINAL.ENVIARCARGA = 'N'))
+        OR ((NEW.REPLICAR = 'C') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'B') AND (TERMINAL.ENVIARCARGA = 'S'))
+        INTO :TERMINAL, :DISTRIBUIDOR
+    DO BEGIN
+            SCRIPT = 'EXECUTE PROCEDURE '
+                || 'SET_BI_REGIAO'
+                || '('
+                || '''' ||:DISTRIBUIDOR || ''''
+                || ', ' || NEW.CODIGO
+                || ', ' || '''' || REPLACE(NEW.NOME,'''',' ') || ''''
+                || ')';
+            INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+    END
+END^
+
+SET TERM ; ^
+

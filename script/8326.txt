@@ -1,0 +1,12 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_romaneio_prontaentrega for romaneio
+active before update position 10
+AS
+BEGIN
+    IF ((OLD.FECHADO = 'N') AND (NEW.FECHADO = 'S')) THEN
+        UPDATE PRONTAENTREGA SET PRONTAENTREGA.FINALIZADO = 'S' WHERE PRONTAENTREGA.ROMANEIOVENDA = NEW.CODIGO;
+END^
+
+SET TERM ; ^
+

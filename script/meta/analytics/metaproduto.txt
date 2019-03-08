@@ -1,0 +1,90 @@
+﻿ALTER TABLE METAPRODUTO
+ADD VOLUME DOM_INT_NN;
+
+alter table METAPRODUTO
+alter ID position 1;
+
+alter table METAPRODUTO
+alter META position 2;
+
+alter table METAPRODUTO
+alter PRODUTO position 3;
+
+alter table METAPRODUTO
+alter VALOR position 4;
+
+alter table METAPRODUTO
+alter QUANTIDADE position 5;
+
+alter table METAPRODUTO
+alter PESO position 6;
+
+alter table METAPRODUTO
+alter VOLUME position 7;
+
+alter table METAPRODUTO
+alter POSITIVACAO position 8;
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_bi_metaproduto (
+    distribuidor dom_str_18_nn,
+    meta dom_id,
+    produto dom_id,
+    valor dom_num_2d_nn,
+    quantidade dom_num_3d_nn,
+    pesobruto dom_num_3d_nn,
+    volume dom_int_nn,
+    positivacao dom_int_nn)
+returns (
+    id dom_id)
+as
+declare variable iddistribuidor dom_id_isn;
+declare variable idmeta dom_id_isn;
+BEGIN
+    SELECT ID FROM GET_DISTRIBUIDOR(:DISTRIBUIDOR) INTO :IDDISTRIBUIDOR;
+    IF (:IDDISTRIBUIDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_DISTRIBUIDORINVALIDO;
+
+    SELECT ID FROM GET_META(:IDDISTRIBUIDOR, :META) INTO :IDMETA;
+    IF (:IDMETA IS NULL) THEN
+        EXCEPTION EXCEPTION_METAINVALIDA;
+
+    UPDATE OR INSERT INTO METAPRODUTO(META, PRODUTO, VALOR, QUANTIDADE, PESO, VOLUME, POSITIVACAO)
+    VALUES (:IDMETA, :PRODUTO, :VALOR, :QUANTIDADE, :PESOBRUTO, :VOLUME, :POSITIVACAO)
+    MATCHING (META, PRODUTO)
+    RETURNING ID INTO :ID;
+
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure del_bi_metaproduto (
+    meta dom_id_isn,
+    distribuidor dom_str_18_nn,
+    produto dom_id)
+as
+declare variable iddistribuidor dom_id_isn;
+declare variable idmeta dom_id_isn;
+BEGIN
+    SELECT ID FROM GET_DISTRIBUIDOR(:DISTRIBUIDOR) INTO :IDDISTRIBUIDOR;
+    IF (:IDDISTRIBUIDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_DISTRIBUIDORINVALIDO;
+
+    SELECT ID FROM GET_META(:IDDISTRIBUIDOR, :META) INTO :IDMETA;
+    IF (:IDMETA IS NULL) THEN
+        EXCEPTION EXCEPTION_METAINVALIDA;
+
+    DELETE FROM METAPRODUTO
+    WHERE METAPRODUTO.META = :IDMETA
+    AND METAPRODUTO.PRODUTO = :PRODUTO;
+END^
+
+SET TERM ; ^
+
+
+

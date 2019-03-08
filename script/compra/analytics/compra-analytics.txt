@@ -1,0 +1,92 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure get_bi_fornecedor (
+    fornecedor dom_str_18)
+returns (
+    id dom_id_isn)
+as
+BEGIN
+    IF (:FORNECEDOR IS NOT NULL) THEN
+        SELECT FORNECEDOR.ID
+        FROM FORNECEDOR
+        INNER JOIN PESSOA ON PESSOA.ID = FORNECEDOR.PESSOA
+        LEFT JOIN PESSOAJURIDICA ON PESSOA.TIPO = 'J' AND PESSOAJURIDICA.PESSOA = PESSOA.ID
+        LEFT JOIN PESSOAFISICA ON PESSOA.TIPO = 'F' AND PESSOAFISICA.PESSOA = PESSOA.ID
+        WHERE :FORNECEDOR IN (PESSOAJURIDICA.CNPJ, PESSOAFISICA.CPF)
+        INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_bi_fornecedor (
+    cnpj dom_str_18,
+    cpf dom_str_14,
+    ie dom_str_15,
+    rg dom_str_15,
+    nome dom_str_60_nn,
+    cidade dom_str_07)
+returns (
+    id dom_int)
+as
+declare variable idpessoa dom_id_isn;
+BEGIN
+    SELECT ID FROM SET_BI_PESSOA(:CNPJ, :CPF, :IE, :RG, :NOME, :CIDADE) INTO :IDPESSOA;
+    IF (:IDPESSOA IS NULL) THEN
+        EXCEPTION EXCEPTION_PESSOAINVALIDA;
+
+    UPDATE OR INSERT INTO FORNECEDOR(FORNECEDOR.PESSOA)
+    VALUES (:IDPESSOA)
+    MATCHING (FORNECEDOR.PESSOA)
+    RETURNING FORNECEDOR.ID INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_bi_compra (
+    item dom_id,
+    distribuidor dom_str_18_nn,
+    data dom_dat_nn,
+    documento dom_id_isn,
+    produto dom_int,
+    quantidade dom_num_3d_nn,
+    valorunitario dom_num_6d_nn,
+    valordesconto dom_num_6d_nn,
+    fornecedor dom_str_18_nn)
+returns (
+    id dom_id_isn)
+as
+declare variable iddistribuidor dom_id_isn;
+declare variable idfornecedor dom_id_isn;
+declare variable idproduto dom_id_isn;
+BEGIN
+    SELECT ID FROM GET_DISTRIBUIDOR(:DISTRIBUIDOR) INTO :IDDISTRIBUIDOR;
+    IF (:IDDISTRIBUIDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_DISTRIBUIDORINVALIDO;
+
+    SELECT ID FROM GET_BI_FORNECEDOR(:FORNECEDOR) INTO :IDFORNECEDOR;
+    IF (:IDFORNECEDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_FORNECEDORINVALIDO;
+
+    SELECT ID FROM GET_PRODUTO(:IDDISTRIBUIDOR, :PRODUTO) INTO :IDPRODUTO;
+    IF (:IDPRODUTO IS NULL) THEN
+        EXCEPTION EXCEPTION_PRODUTOINVALIDO;
+
+    UPDATE OR INSERT INTO COMPRA(COMPRA.ITEM, COMPRA.DISTRIBUIDOR, COMPRA.DATA, COMPRA.DOCUMENTO, COMPRA.PRODUTO
+    , COMPRA.QUANTIDADE, COMPRA.VALORUNITARIO, COMPRA.VALORDESCONTO, COMPRA.FORNECEDOR)
+    VALUES (:ITEM, :IDDISTRIBUIDOR, :DATA, :DOCUMENTO, :IDPRODUTO
+    , :QUANTIDADE, :VALORUNITARIO, :VALORDESCONTO
+    , :IDFORNECEDOR)
+    MATCHING (COMPRA.ITEM, COMPRA.DISTRIBUIDOR, COMPRA.FORNECEDOR, COMPRA.DATA, COMPRA.DOCUMENTO, COMPRA.PRODUTO)
+    RETURNING COMPRA.ID INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+

@@ -1,0 +1,85 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure set_bi_meta (
+    distribuidor dom_str_18_nn,
+    idmeta dom_id,
+    nome dom_str_60,
+    tipo dom_str_01_nn,
+    datainicial dom_dat_nn,
+    datafinal dom_dat_nn)
+returns (
+    id dom_id)
+as
+declare variable iddistribuidor dom_id_isn;
+BEGIN
+    SELECT ID FROM GET_DISTRIBUIDOR(:DISTRIBUIDOR) INTO :IDDISTRIBUIDOR;
+    IF (:IDDISTRIBUIDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_DISTRIBUIDORINVALIDO;
+
+    UPDATE OR INSERT INTO META(META.DISTRIBUIDOR, META.IDMETA, META.NOME, META.TIPO, META.DATAINICIAL, META.DATAFINAL)
+    VALUES (:IDDISTRIBUIDOR, :IDMETA, :NOME, :TIPO, :DATAINICIAL, :DATAFINAL)
+    MATCHING (META.DISTRIBUIDOR, META.IDMETA)
+    RETURNING META.ID INTO :ID;
+
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure del_bi_meta (
+    idmeta dom_id_isn,
+    distribuidor dom_str_18_nn)
+as
+declare variable iddistribuidor dom_id_isn;
+BEGIN
+    SELECT ID FROM GET_DISTRIBUIDOR(:DISTRIBUIDOR) INTO :IDDISTRIBUIDOR;
+    IF (:IDDISTRIBUIDOR IS NULL) THEN
+        EXCEPTION EXCEPTION_DISTRIBUIDORINVALIDO;
+    
+    DELETE FROM META
+    WHERE META.DISTRIBUIDOR = :IDDISTRIBUIDOR
+    AND META.IDMETA = :IDMETA;
+END^
+
+SET TERM ; ^
+
+CREATE EXCEPTION EXCEPTION_METAINVALIDA 'META NAO ENCONTRADA';
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure get_meta (
+    iddistribuidor dom_id,
+    idmeta dom_id)
+returns (
+    id dom_id)
+as
+BEGIN
+    SELECT META.ID
+    FROM META
+    WHERE META.DISTRIBUIDOR = :IDDISTRIBUIDOR
+    AND META.IDMETA = :IDMETA
+    INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+create or alter procedure get_cidade (
+    codigofiscal dom_str_07)
+returns (
+    id dom_id)
+as
+BEGIN
+  SELECT CIDADE.ID
+  FROM CIDADE
+  WHERE CIDADE.CODIGOFISCAL = :CODIGOFISCAL
+  INTO :ID;
+  SUSPEND;
+END^
+
+SET TERM ; ^
+

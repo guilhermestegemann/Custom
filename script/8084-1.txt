@@ -1,0 +1,546 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure procedure_verificarnf (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    origem varchar(1),
+    clifor integer,
+    vincularlote varchar(1))
+returns (
+    retorno varchar(100))
+as
+declare variable erros integer;
+declare variable varnumero integer;
+declare variable varendereconumero varchar(10);
+declare variable varcodigofiscal varchar(7);
+declare variable varemissao date;
+declare variable varvcto date;
+declare variable vargerarfinanceiro varchar(1);
+declare variable varfatura varchar(1);
+declare variable vargerarestoque varchar(1);
+declare variable varatualizada varchar(1);
+declare variable varestoquenegativo varchar(1);
+declare variable varcontrolalotevalidade varchar(1);
+declare variable varcontrolalotevalidadeproduto varchar(1);
+declare variable varestoqueatual numeric(15,3);
+declare variable varqtde numeric(15,3);
+declare variable varqtderegistrada numeric(15,3);
+declare variable varproduto integer;
+declare variable varvalidade date;
+declare variable varlote varchar(20);
+declare variable varqtdelote numeric(15,3);
+declare variable varfabricacao date;
+declare variable varitem integer;
+declare variable vargerarestoqueimproprio varchar(1);
+declare variable varmodelo varchar(3);
+declare variable varchaveacesso varchar(44);
+declare variable varvendedornf integer;
+declare variable varvendedorpedido integer;
+declare variable k integer;
+declare variable valor integer;
+declare variable soma integer;
+declare variable contador integer;
+declare variable varcodigoncm varchar(8);
+declare variable vardevolucao varchar(1);
+declare variable varnumeror integer;
+declare variable varfilialr integer;
+declare variable varcliforr integer;
+declare variable varserier varchar(5);
+declare variable varprodutor integer;
+declare variable varqtder numeric(15,3);
+declare variable varmotivodevolucao integer;
+declare variable varordens integer;
+declare variable vartotalnf numeric(15,2);
+declare variable vartotalnfr numeric(15,2);
+declare variable varqtdeprodutopedido integer;
+declare variable varqtdeprodutonf integer;
+declare variable varnumeropedido integer;
+declare variable varfilialpedido integer;
+declare variable varfinalidade varchar(1);
+declare variable varvezes integer;
+declare variable varparcelas integer;
+declare variable varchaveacessoref varchar(44);
+declare variable varitens integer;
+declare variable varnumerocupom integer;
+declare variable varfilialcupom integer;
+declare variable varcaixacupom integer;
+declare variable varemissaocupom date;
+declare variable varvalortotalcupom numeric(15,2);
+declare variable varmotivodevolucaocupom integer;
+declare variable varindicadortipoestoque integer;
+declare variable varisolarst varchar(1);
+declare variable varvencimentost integer;
+BEGIN
+    RETORNO = 'OK';
+    ERROS = 0;
+    VARQTDEPRODUTONF = 0;
+    /*dados documento fiscal*/
+    SELECT NF.NUMERO, NF.EMISSAO, CLIFOR.NUMERO, CIDADE.CODIGOFISCAL
+    , TIPOCFOP.GERARFINANCEIRO, TIPOCFOP.FATURA, TIPOCFOP.GERARESTOQUE
+    , NF.ATUALIZADA, FILIAL.ESTOQUENEGATIVO, FILIAL.CONTROLALOTEVALIDADE
+    , TIPOCFOP.GERARESTOQUEIMPROPRIO, TIPOCFOP.DEVOLUCAO, TIPOCFOP.FINALIDADE
+    , NF.MODELO, NFE.CHAVEACESSO
+    , NF.FUNCIONARIO, PEDIDO.FUNCIONARIO
+    , NF.TOTAL, CONDICAOPAGAMENTO.VEZES
+    , NF.PEDIDO, NF.FILIALPEDIDO
+    , TIPOCFOP.INDICADORTIPOESTOQUE
+    , CONDICAOPAGAMENTO.ISOLARST, CONDICAOPAGAMENTO.VENCIMENTOST
+    FROM NF
+    INNER JOIN FILIAL ON FILIAL.CODIGO = NF.FILIAL
+    INNER JOIN CLIFOR ON CLIFOR.CODIGO = NF.CLIFOR
+    INNER JOIN CIDADE ON CIDADE.CODIGO = CLIFOR.CIDADE
+    INNER JOIN TIPOCFOP ON TIPOCFOP.CODIGO = NF.TIPOCFOP
+    INNER JOIN CONDICAOPAGAMENTO ON CONDICAOPAGAMENTO.CODIGO = NF.CONDICAOPAGAMENTO
+    LEFT JOIN PEDIDO ON PEDIDO.NUMERO = NF.PEDIDO AND PEDIDO.FILIAL = NF.FILIALPEDIDO
+    LEFT JOIN NFE ON NFE.NUMERO = NF.NUMERO AND NFE.SERIE = NF.SERIE AND NFE.FILIAL = NF.FILIAL AND NFE.ORIGEM = NF.ORIGEM AND NFE.CLIFOR = NF.CLIFOR
+    WHERE NF.NUMERO = :NUMERO AND NF.SERIE = :SERIE AND NF.FILIAL = :FILIAL AND NF.ORIGEM = :ORIGEM AND NF.CLIFOR = :CLIFOR
+    INTO :VARNUMERO, :VAREMISSAO, :VARENDERECONUMERO, :VARCODIGOFISCAL,
+    :VARGERARFINANCEIRO, :VARFATURA, :VARGERARESTOQUE,
+    :VARATUALIZADA, :VARESTOQUENEGATIVO, :VARCONTROLALOTEVALIDADE
+    , :VARGERARESTOQUEIMPROPRIO, :VARDEVOLUCAO, :VARFINALIDADE
+    , :VARMODELO, :VARCHAVEACESSO
+    , :VARVENDEDORNF, :VARVENDEDORPEDIDO
+    , :VARTOTALNF, :VARVEZES, :VARNUMEROPEDIDO, :VARFILIALPEDIDO
+    , :VARINDICADORTIPOESTOQUE, :VARISOLARST, :VARVENCIMENTOST;
+    IF ((:VARFINALIDADE = '1') OR (:VARFINALIDADE = '4')) THEN BEGIN
+        FOR
+            SELECT ITEMNF.PRODUTO FROM ITEMNF
+            WHERE ITEMNF.NUMERO = :NUMERO
+            AND ITEMNF.SERIE = :SERIE
+            AND ITEMNF.FILIAL = :FILIAL
+            AND ITEMNF.ORIGEM = :ORIGEM
+            AND ITEMNF.CLIFOR = :CLIFOR
+            AND ITEMNF.QTDE <= 0
+            INTO :VARPRODUTO
+        DO BEGIN
+            ERROS = :ERROS + 1;
+            RETORNO = 'PRODUTO COM QUANTIDADE INVALIDA:' || :VARPRODUTO;
+        END
+    END
+    IF ((:VARDEVOLUCAO = 'S') OR (:VARFINALIDADE = '4')) THEN BEGIN
+        /*Verificar refereciada*/
+        SELECT NFREFERENCIADA.MOTIVODEVOLUCAO,
+               NFREFERENCIADA.NUMERO, NFREFERENCIADA.SERIE,
+               NFREFERENCIADA.FILIAL, NFREFERENCIADA.CLIFOR,
+               NF.TOTAL, NFREFERENCIADA.CHAVEACESSO
+        FROM NFREFERENCIADA
+        LEFT JOIN NF ON NF.NUMERO = NFREFERENCIADA.NUMERO
+            AND NF.SERIE = NFREFERENCIADA.SERIE
+            AND NF.FILIAL = NFREFERENCIADA.FILIAL
+            AND NF.CLIFOR = NFREFERENCIADA.CLIFOR
+        WHERE NFREFERENCIADA.NFNUMERO = :NUMERO
+        AND NFREFERENCIADA.NFSERIE = :SERIE
+        AND NFREFERENCIADA.NFFILIAL = :FILIAL
+        AND NFREFERENCIADA.NFORIGEM = :ORIGEM
+        AND NFREFERENCIADA.NFCLIFOR = :CLIFOR
+        INTO :VARMOTIVODEVOLUCAO,
+             :VARNUMEROR, :VARSERIER, :VARFILIALR, :VARCLIFORR, :VARTOTALNFR, :VARCHAVEACESSOREF;
+        
+        SELECT NFCUPOM.MOTIVODEVOLUCAO, NFCUPOM.NUMEROCUPOM, NFCUPOM.FILIALCUPOM, NFCUPOM.CAIXACUPOM, NFCUPOM.EMISSAOCUPOM, CUPOM.VALORTOTAL
+        FROM NFCUPOM
+        INNER JOIN CUPOM ON CUPOM.NUMERO = NFCUPOM.NUMEROCUPOM
+            AND CUPOM.FILIAL = NFCUPOM.FILIALCUPOM
+            AND CUPOM.CAIXA = NFCUPOM.CAIXACUPOM
+            AND CUPOM.EMISSAO = NFCUPOM.EMISSAOCUPOM
+        WHERE NFCUPOM.NUMERO = :NUMERO
+        AND NFCUPOM.SERIE = :SERIE
+        AND NFCUPOM.FILIAL = :FILIAL
+        AND NFCUPOM.ORIGEM = :ORIGEM
+        AND NFCUPOM.CLIFOR = :CLIFOR
+        INTO :VARMOTIVODEVOLUCAOCUPOM,  :VARNUMEROCUPOM, VARFILIALCUPOM, VARCAIXACUPOM, VAREMISSAOCUPOM, VARVALORTOTALCUPOM;
+
+        IF ((:ORIGEM = 'P') AND ((:VARCHAVEACESSOREF IS NULL) AND (:VARNUMEROCUPOM IS NULL))  AND (:VARFINALIDADE = '4')) THEN BEGIN
+            ERROS = :ERROS + 1;
+            RETORNO = 'NFE COM FINALIDADE DEVOLUCAO DEVE CONTER UM DOCUMENTO REFERENCIADO(NF OU CUPOM)';
+        END
+
+        IF ((:VARDEVOLUCAO = 'S') AND (:VARNUMEROCUPOM IS NOT NULL)) THEN BEGIN
+            IF (:VARTOTALNF > :VARVALORTOTALCUPOM)THEN BEGIN
+                ERROS = :ERROS + 1;
+                RETORNO = 'TOTAL DA NF MAIOR QUE O CUPOM DE ORIGEM.';
+            END
+            IF (:VARTOTALNF = :VARVALORTOTALCUPOM) THEN BEGIN
+                SELECT COUNT(*)
+                FROM ORDEMCUPOM
+                INNER JOIN CUPOM ON CUPOM.NUMERO = ORDEMCUPOM.NUMERO
+                    AND CUPOM.FILIAL = ORDEMCUPOM.FILIAL
+                    AND CUPOM.CAIXA = ORDEMCUPOM.CAIXA
+                    AND CUPOM.EMISSAO = ORDEMCUPOM.EMISSAO
+
+                INNER JOIN FINANCEIRO ON FINANCEIRO.FILIAL = ORDEMCUPOM.FILIAL AND FINANCEIRO.CLIFOR = CUPOM.CLIFOR
+                        AND FINANCEIRO.ORDEM = ORDEMCUPOM.ORDEM AND FINANCEIRO.DATAEMISSAO = ORDEMCUPOM.EMISSAO
+                INNER JOIN FILIAL ON FILIAL.CODIGO = ORDEMCUPOM.FILIAL AND FILIAL.BLOQUEARCANCELARBAIXADO = 'S'
+                WHERE ORDEMCUPOM.NUMERO = :VARNUMEROCUPOM
+                AND ORDEMCUPOM.FILIAL = :VARFILIALCUPOM
+                AND ORDEMCUPOM.CAIXA = :VARCAIXACUPOM
+                AND ORDEMCUPOM.EMISSAO = :VAREMISSAOCUPOM
+                AND FINANCEIRO.DATABAIXA IS NOT NULL
+                INTO :VARORDENS;
+                IF (:VARORDENS > 0) THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    RETORNO = 'REGISTRO FINANCEIRO BAIXADO.';
+                END
+                /*VERIFICA ORDEM AGRUPADA OU REPARCELADA*/
+                SELECT COUNT(*)
+                FROM ORDEMCUPOM
+                INNER JOIN CUPOM ON CUPOM.NUMERO = ORDEMCUPOM.NUMERO
+                    AND CUPOM.FILIAL = ORDEMCUPOM.FILIAL
+                    AND CUPOM.CAIXA = ORDEMCUPOM.CAIXA
+                    AND CUPOM.EMISSAO = ORDEMCUPOM.EMISSAO
+                INNER JOIN FINANCEIRO ON FINANCEIRO.FILIAL = ORDEMCUPOM.FILIAL AND FINANCEIRO.CLIFOR = CUPOM.CLIFOR
+                        AND FINANCEIRO.ORDEM = ORDEMCUPOM.ORDEM AND FINANCEIRO.DATAEMISSAO = ORDEMCUPOM.EMISSAO
+                WHERE ORDEMCUPOM.NUMERO = :VARNUMEROCUPOM
+                    AND ORDEMCUPOM.FILIAL = :VARFILIALCUPOM
+                    AND ORDEMCUPOM.CAIXA = :VARCAIXACUPOM
+                    AND ORDEMCUPOM.EMISSAO = :VAREMISSAOCUPOM
+                    AND ((FINANCEIRO.VINCULADOFILIAL IS NOT NULL
+                    AND FINANCEIRO.VINCULADOCLIFOR IS NOT NULL
+                    AND FINANCEIRO.VINCULADOORDEM IS NOT NULL
+                    AND FINANCEIRO.VINCULADODATAEMISSAO IS NOT NULL)
+                    OR (FINANCEIRO.REPARCELADO = 'S'))
+                INTO :VARORDENS;
+                IF (:VARORDENS > 0) THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    RETORNO = 'REGISTRO FINANCEIRO AGRUPADO OU REPARCELADO.';
+                END
+            END --fim IF (:VARTOTALNF = :VARVALORTOTALCUPOM) THEN BEGIN
+            IF ((:VARMOTIVODEVOLUCAOCUPOM IS NOT NULL) AND (:VARNUMEROCUPOM IS NOT NULL)) THEN BEGIN
+                FOR
+                    SELECT ITEMCUPOM.PRODUTO, SUM(ITEMCUPOM.QTDE), REFERENCIADA.PRODUTO, SUM(REFERENCIADA.QTDE)
+                FROM ITEMCUPOM
+                    LEFT JOIN ITEMCUPOM REFERENCIADA
+                        ON REFERENCIADA.NUMERO = :VARNUMEROCUPOM
+                        AND REFERENCIADA.FILIAL = :VARFILIALCUPOM
+                        AND REFERENCIADA.CAIXA = :VARCAIXACUPOM
+                        AND REFERENCIADA.EMISSAO = :VAREMISSAOCUPOM
+                        AND REFERENCIADA.PRODUTO = ITEMCUPOM.PRODUTO
+                    WHERE ITEMCUPOM.NUMERO = :VARNUMEROCUPOM
+                    AND ITEMCUPOM.FILIAL = :VARFILIALCUPOM
+                    AND ITEMCUPOM.CAIXA = :VARCAIXACUPOM
+                    AND ITEMCUPOM.EMISSAO = :VAREMISSAOCUPOM
+                    GROUP BY ITEMCUPOM.PRODUTO, REFERENCIADA.PRODUTO
+                    INTO :VARPRODUTO, :VARQTDE, :VARPRODUTOR, :VARQTDER
+                DO BEGIN
+                    IF (:VARPRODUTOR IS NULL) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        RETORNO = 'PRODUTO NAO ENCONTRADO NA CUPOM DE VENDA: '||:VARPRODUTO;
+                    END
+                    IF (:VARQTDE > :VARQTDER) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        IF (RETORNO <> 'OK') THEN SUSPEND;
+                            RETORNO = 'QUANTIDADE DEVOLVIDA MAIOR QUE A VENDA, PRODUTO: '||:VARPRODUTO;
+                    END
+                END
+            END --fim IF ((:VARMOTIVODEVOLUCAOCUPOM IS NOT NULL) AND (:VARNUMEROCUPOM IS NOT NULL)) THEN BEGIN
+        END
+        IF ((:VARDEVOLUCAO = 'S') AND (:VARNUMEROR IS NOT NULL)) THEN BEGIN
+            IF (:VARTOTALNF > :VARTOTALNFR)THEN BEGIN
+                ERROS = :ERROS + 1;
+                RETORNO = 'TOTAL DA NF MAIOR QUE A NF DE ORIGEM.';
+            END
+            IF (:VARTOTALNF = :VARTOTALNFR) THEN BEGIN
+                /*VERIFICA ORDEM BAIXADA*/
+                SELECT COUNT(*)
+                FROM ORDEMNF
+                INNER JOIN NF ON NF.NUMERO = ORDEMNF.NUMERO AND NF.SERIE = ORDEMNF.SERIE AND NF.FILIAL = ORDEMNF.FILIAL
+                        AND NF.ORIGEM = ORDEMNF.ORIGEM AND NF.CLIFOR = ORDEMNF.CLIFOR
+                INNER JOIN FINANCEIRO ON FINANCEIRO.FILIAL = ORDEMNF.FILIAL AND FINANCEIRO.CLIFOR = ORDEMNF.CLIFOR
+                        AND FINANCEIRO.ORDEM = ORDEMNF.ORDEM AND FINANCEIRO.DATAEMISSAO = NF.EMISSAO
+                INNER JOIN FILIAL ON FILIAL.CODIGO = ORDEMNF.FILIAL AND FILIAL.BLOQUEARCANCELARBAIXADO = 'S'
+                WHERE ORDEMNF.NUMERO = :VARNUMEROR
+                AND ORDEMNF.SERIE = :VARSERIER
+                AND ORDEMNF.FILIAL = :VARFILIALR
+                AND ORDEMNF.CLIFOR = :VARCLIFORR
+                AND ORDEMNF.ORIGEM = 'P'
+                AND FINANCEIRO.DATABAIXA IS NOT NULL
+                INTO :VARORDENS;
+                IF (:VARORDENS > 0) THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    RETORNO = 'REGISTRO FINANCEIRO BAIXADO.';
+                END
+                /*VERIFICA ORDEM AGRUPADA OU REPARCELADA*/
+                SELECT COUNT(*)
+                FROM ORDEMNF
+                    INNER JOIN NF ON NF.NUMERO = ORDEMNF.NUMERO AND NF.SERIE = ORDEMNF.SERIE AND NF.FILIAL = ORDEMNF.FILIAL
+                        AND NF.ORIGEM = ORDEMNF.ORIGEM AND NF.CLIFOR = ORDEMNF.CLIFOR
+                    INNER JOIN FINANCEIRO ON FINANCEIRO.FILIAL = ORDEMNF.FILIAL AND FINANCEIRO.CLIFOR = ORDEMNF.CLIFOR
+                        AND FINANCEIRO.ORDEM = ORDEMNF.ORDEM AND FINANCEIRO.DATAEMISSAO = NF.EMISSAO
+                    WHERE ORDEMNF.NUMERO = :VARNUMEROR
+                    AND ORDEMNF.SERIE = :VARSERIER
+                    AND ORDEMNF.FILIAL = :VARFILIALR
+                    AND ORDEMNF.CLIFOR = :VARCLIFORR
+                    AND ORDEMNF.ORIGEM = 'P'
+                    AND ((FINANCEIRO.VINCULADOFILIAL IS NOT NULL
+                    AND FINANCEIRO.VINCULADOCLIFOR IS NOT NULL
+                    AND FINANCEIRO.VINCULADOORDEM IS NOT NULL
+                    AND FINANCEIRO.VINCULADODATAEMISSAO IS NOT NULL)
+                    OR (FINANCEIRO.REPARCELADO = 'S'))
+                INTO :VARORDENS;
+                IF (:VARORDENS > 0) THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    RETORNO = 'REGISTRO FINANCEIRO AGRUPADO OU REPARCELADO.';
+                END
+            END
+            IF ((:VARMOTIVODEVOLUCAO IS NOT NULL) AND (:VARNUMEROR IS NOT NULL)) THEN BEGIN
+                FOR
+                    SELECT ITEMNF.PRODUTO, ITEMNF.QTDE, REFERENCIADA.PRODUTO, REFERENCIADA.QTDE
+                FROM ITEMNF
+                    LEFT JOIN ITEMNF REFERENCIADA
+                        ON REFERENCIADA.NUMERO = :VARNUMEROR
+                        AND REFERENCIADA.SERIE = :VARSERIER
+                        AND REFERENCIADA.FILIAL = :VARFILIALR
+                        AND REFERENCIADA.CLIFOR = :VARCLIFORR
+                        AND REFERENCIADA.PRODUTO = ITEMNF.PRODUTO
+                    WHERE ITEMNF.NUMERO = :NUMERO
+                    AND ITEMNF.SERIE = :SERIE
+                    AND ITEMNF.FILIAL = :FILIAL
+                    AND ITEMNF.ORIGEM = :ORIGEM
+                    AND ITEMNF.CLIFOR = :CLIFOR
+                    INTO :VARPRODUTO, :VARQTDE, :VARPRODUTOR, :VARQTDER
+                DO BEGIN                       
+                    IF (:VARPRODUTOR IS NULL) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        RETORNO = 'PRODUTO NAO ENCONTRADO NA NF DE VENDA: '||:VARPRODUTO;
+                    END
+                    IF (:VARQTDE > :VARQTDER) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        IF (RETORNO <> 'OK') THEN SUSPEND;
+                            RETORNO = 'QUANTIDADE DEVOLVIDA MAIOR QUE A VENDA, PRODUTO: '||:VARPRODUTO;
+                    END
+                END
+            END
+        END
+    END
+    IF (:ORIGEM = 'T') THEN BEGIN
+        IF (:VARMODELO = '55') THEN BEGIN
+            IF (:VARCHAVEACESSO IS NULL) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'CHAVE DE ACESSO NAO INFORMADA';
+            END
+            IF (CHAR_LENGTH(:VARCHAVEACESSO) <> 44) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'CHAVE NFE DEVE CONTER 44 CARACTERES';
+            END ELSE BEGIN
+                /*VALIDA SE NAO CONTEM LETRAS*/
+                K = 0;
+                WHILE (K < CHAR_LENGTH(:VARCHAVEACESSO)) DO BEGIN
+                    K = K + 1;
+                    VALOR = SUBSTRING(:VARCHAVEACESSO FROM K FOR 1);
+                    WHEN ANY DO BEGIN
+                        ERROS = :ERROS + 1;
+                        IF (RETORNO <> 'OK') THEN SUSPEND;
+                        RETORNO = 'A CHAVE DA NFE DEVE CONTER APENAS NUMEROS';
+                        K = CHAR_LENGTH(:VARCHAVEACESSO);
+                    END
+                END
+                /*VALIDA O DIGITO VERIFICADOR*/
+                IF (RETORNO = 'OK') THEN BEGIN
+                    K = 2;
+                    SOMA = 0;
+                    CONTADOR = 43;
+                    WHILE (CONTADOR <> 0) DO BEGIN
+                        IF (K > 9) THEN K = 2;
+                            VALOR = SUBSTRING(:VARCHAVEACESSO FROM CONTADOR FOR 1);
+                        SOMA = SOMA + (VALOR * K);
+                        CONTADOR = CONTADOR - 1;
+                        K = K + 1;
+                    END
+                    SOMA = MOD(SOMA,11);
+                    SOMA = (11 - SOMA);
+                    IF (SOMA > 9) THEN
+                        SOMA = 0;
+                    IF (SOMA <> SUBSTRING(:VARCHAVEACESSO FROM 44 FOR 1)) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        IF (RETORNO <> 'OK') THEN SUSPEND;
+                        RETORNO = 'CHAVE NFE INVALIDA';
+                    END
+                END
+            END
+        END
+    END
+    IF (:VARNUMERO IS NULL) THEN BEGIN
+        ERROS = :ERROS + 1;
+        RETORNO = 'NOTA FISCAL NAO ENCONTRADA: '||:NUMERO;
+    END
+    IF (:ORIGEM = 'P') THEN BEGIN
+        IF (:VARENDERECONUMERO IS NULL) THEN BEGIN
+            ERROS = :ERROS + 1;
+            RETORNO = 'ENDERECO DESTINATARIO INCOMPLETO: NUMERO NAO INFORMADO';
+        END
+        IF (:VARCODIGOFISCAL IS NULL) THEN BEGIN
+            ERROS = :ERROS + 1;
+            IF (RETORNO <> 'OK') THEN SUSPEND;
+            RETORNO = 'CODIGO FISCAL DO MUNICIPIO DO DESTINATARIO NAO INFORMADO';
+        END
+        IF (:VARVENDEDORPEDIDO IS NOT NULL) THEN
+            IF (:VARVENDEDORPEDIDO <> :VARVENDEDORNF) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'IDENTIFICACAO DO VENDEDOR DIFERE DO PEDIDO';
+            END
+    END
+    /*verificar quantidade de faturas*/
+    SELECT COUNT(*)
+    FROM ORDEMNF
+    WHERE ORDEMNF.NUMERO = :NUMERO
+    AND ORDEMNF.SERIE = :SERIE
+    AND ORDEMNF.FILIAL = :FILIAL
+    AND ORDEMNF.ORIGEM = :ORIGEM
+    AND ORDEMNF.CLIFOR = :CLIFOR
+    INTO :VARPARCELAS;
+    IF ((:VARISOLARST = 'S') AND (:VARVENCIMENTOST IS NOT NULL)) then
+        VARVEZES = :VARVEZES + 1;
+    IF (:VARPARCELAS IS NULL) THEN
+        VARPARCELAS = 0;
+    IF (:VARVEZES <> :VARPARCELAS) THEN BEGIN
+        ERROS = :ERROS + 1;
+        IF (RETORNO <> 'OK') THEN SUSPEND;
+        RETORNO = 'QUANTIDADE DE PARCELAS DIFERENTE DA CONDICAO DE PAGAMENTO';
+    END
+    /*Verificar data vencimento financeiro*/
+    IF (:VARGERARFINANCEIRO = 'S') THEN BEGIN
+        FOR
+            SELECT ORDEMNF.VCTO
+            FROM ORDEMNF
+            WHERE ORDEMNF.NUMERO = :NUMERO
+            AND ORDEMNF.SERIE = :SERIE
+            AND ORDEMNF.FILIAL = :FILIAL
+            AND ORDEMNF.ORIGEM = :ORIGEM
+            AND ORDEMNF.CLIFOR = :CLIFOR
+            INTO :VARVCTO
+        DO BEGIN
+            IF (:VARVCTO < :VAREMISSAO) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'DATA DE VENCIMENTO DA FATURA MENOR QUE A EMISSAO DA NF:' || :VARVCTO;
+            END
+        END
+    END
+    /*Verificar estoque do produto*/
+    IF ((:VARFATURA = 'E') AND (:VARGERARESTOQUE = 'S') AND (:VARATUALIZADA = 'N')) THEN BEGIN
+        FOR
+            SELECT ITEMNF.PRODUTO, ITEMNF.ITEM, ESTOQUE.CONTROLARLOTEVALIDADE, ITEMNF.QTDE
+            FROM ITEMNF
+            LEFT JOIN ESTOQUE ON ESTOQUE.FILIAL = :FILIAL AND ESTOQUE.PRODUTO = ITEMNF.PRODUTO
+            WHERE ITEMNF.NUMERO = :NUMERO AND ITEMNF.SERIE = :SERIE AND ITEMNF.FILIAL = :FILIAL AND ITEMNF.ORIGEM = :ORIGEM AND ITEMNF.CLIFOR = :CLIFOR
+            INTO :VARPRODUTO, :VARITEM, :VARCONTROLALOTEVALIDADEPRODUTO, :VARQTDE
+        DO BEGIN
+            IF ((:VARCONTROLALOTEVALIDADE = 'S') AND (:VARCONTROLALOTEVALIDADEPRODUTO = 'S')) THEN BEGIN
+                SELECT SUM(VALIDADEITEMNF.QTDE)
+                FROM VALIDADEITEMNF
+                WHERE VALIDADEITEMNF.NUMERO = :NUMERO AND VALIDADEITEMNF.SERIE = :SERIE
+                AND VALIDADEITEMNF.FILIAL = :FILIAL AND VALIDADEITEMNF.ORIGEM = :ORIGEM
+                AND VALIDADEITEMNF.CLIFOR = :CLIFOR AND VALIDADEITEMNF.PRODUTO = :VARPRODUTO
+                AND VALIDADEITEMNF.ITEM = :VARITEM
+                INTO :VARQTDELOTE;
+                IF ((:VARQTDELOTE <> :VARQTDE) OR (:VARQTDELOTE IS NULL))  THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    IF (RETORNO <> 'OK') THEN SUSPEND;
+                    RETORNO = 'LOTE/VALIDADE INFORMADO INCORRETO NO PRODUTO:' || :VARPRODUTO;
+                END
+            END
+        END
+    END ELSE
+    IF ((:VARFATURA = 'S') AND (:VARGERARESTOQUE = 'S') AND (:VARATUALIZADA = 'N')) THEN BEGIN
+        FOR
+            SELECT ITEMNF.PRODUTO, PRODUTO.CODIGONCM
+            , CASE WHEN (:VARGERARESTOQUEIMPROPRIO = 'N') THEN
+                (SELECT PROCEDURE_ESTOQUEDISPONIVEL.ESTOQUEDISPONIVEL FROM PROCEDURE_ESTOQUEDISPONIVEL(ITEMNF.PRODUTO, ITEMNF.FILIAL, 'S')) + SUM(ITEMNF.QTDE)
+                ELSE ESTOQUE.ESTOQUEIMPROPRIO END
+            , ESTOQUE.CONTROLARLOTEVALIDADE
+            , SUM(ITEMNF.QTDE)
+            , COUNT(ITEMNF.PRODUTO)
+            FROM ITEMNF
+            INNER JOIN PRODUTO ON PRODUTO.CODIGO = ITEMNF.PRODUTO
+            LEFT JOIN ESTOQUE ON ESTOQUE.FILIAL = :FILIAL AND ESTOQUE.PRODUTO = ITEMNF.PRODUTO
+            WHERE ITEMNF.NUMERO = :NUMERO AND ITEMNF.SERIE = :SERIE AND ITEMNF.FILIAL = :FILIAL AND ITEMNF.ORIGEM = :ORIGEM AND ITEMNF.CLIFOR = :CLIFOR
+            GROUP BY ITEMNF.PRODUTO, PRODUTO.CODIGONCM, ITEMNF.FILIAL, ESTOQUE.ESTOQUEIMPROPRIO, ESTOQUE.CONTROLARLOTEVALIDADE
+            INTO :VARPRODUTO, :VARCODIGONCM, :VARESTOQUEATUAL, :VARCONTROLALOTEVALIDADEPRODUTO, :VARQTDE, :VARITENS
+        DO BEGIN
+            IF ((:VARCODIGONCM IS NULL) OR (:VARCODIGONCM = '') OR (CHAR_LENGTH(:VARCODIGONCM) <> 8)) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'CODIGO NCM INVALIDO PARA O PRODUTO:' || :VARPRODUTO;
+            END
+            IF (:VARESTOQUENEGATIVO = 'N') THEN BEGIN
+                IF (:VARESTOQUEATUAL < :VARQTDE) THEN BEGIN
+                    ERROS = :ERROS + 1;
+                    IF (RETORNO <> 'OK') THEN SUSPEND;
+                    RETORNO = 'ESTOQUE INSUFICIENTE PARA O PRODUTO:' || :VARPRODUTO;
+                END
+            END
+            IF (:VARGERARESTOQUEIMPROPRIO = 'N') THEN BEGIN
+                IF ((:VARCONTROLALOTEVALIDADE = 'S') AND (:VARCONTROLALOTEVALIDADEPRODUTO = 'S')) THEN BEGIN
+                    SELECT SUM(VALIDADE.QTDE)
+                    FROM VALIDADE
+                    WHERE VALIDADE.FILIAL = :FILIAL
+                    AND VALIDADE.PRODUTO = :VARPRODUTO
+                    INTO :VARESTOQUEATUAL;
+                    IF ((:VARESTOQUEATUAL < :VARQTDE) OR (:VARESTOQUEATUAL IS NULL)) THEN BEGIN
+                        ERROS = :ERROS + 1;
+                        IF (RETORNO <> 'OK') THEN SUSPEND;
+                        RETORNO = 'LOTE/VALIDADE INSUFICIENTE PARA O PRODUTO:' || :VARPRODUTO;
+                    END   
+                END
+            END
+            VARQTDEPRODUTONF = :VARQTDEPRODUTONF + :VARITENS;
+        END
+        IF (VARNUMEROPEDIDO IS NOT NULL) THEN BEGIN
+            SELECT COUNT (PRODUTO)
+            FROM ITEMPEDIDO
+            WHERE ITEMPEDIDO.NUMERO = :VARNUMEROPEDIDO
+            AND ITEMPEDIDO.FILIAL = :VARFILIALPEDIDO
+            INTO :VARQTDEPRODUTOPEDIDO;
+            IF (:VARQTDEPRODUTOPEDIDO <> :VARQTDEPRODUTONF) THEN BEGIN
+                ERROS = :ERROS + 1;
+                IF (RETORNO <> 'OK') THEN SUSPEND;
+                RETORNO = 'NOTA FISCAL COM ITENS A MENOS DO PEDIDO. VERIFIQUE!'||:NUMERO;
+            END
+        END
+        IF (:VARGERARESTOQUEIMPROPRIO = 'N') THEN BEGIN
+            IF ((:VINCULARLOTE = 'S') AND (:ERROS = 0)) THEN BEGIN
+                FOR
+                    SELECT ITEMNF.PRODUTO, ITEMNF.ITEM, ESTOQUE.CONTROLARLOTEVALIDADE, ITEMNF.QTDE
+                    FROM ITEMNF
+                    LEFT JOIN ESTOQUE ON ESTOQUE.FILIAL = :FILIAL AND ESTOQUE.PRODUTO = ITEMNF.PRODUTO
+                    WHERE ITEMNF.NUMERO = :NUMERO AND ITEMNF.SERIE = :SERIE AND ITEMNF.FILIAL = :FILIAL AND ITEMNF.ORIGEM = :ORIGEM AND ITEMNF.CLIFOR = :CLIFOR
+                    INTO :VARPRODUTO, :VARITEM, :VARCONTROLALOTEVALIDADEPRODUTO, :VARQTDE
+                DO BEGIN
+                    IF (:VARCONTROLALOTEVALIDADEPRODUTO = 'S') THEN BEGIN
+                        SELECT SUM(VALIDADEITEMNF.QTDE)
+                        FROM VALIDADEITEMNF
+                        WHERE VALIDADEITEMNF.NUMERO = :NUMERO AND VALIDADEITEMNF.SERIE = :SERIE
+                        AND VALIDADEITEMNF.FILIAL = :FILIAL AND VALIDADEITEMNF.ORIGEM = :ORIGEM
+                        AND VALIDADEITEMNF.CLIFOR = :CLIFOR AND VALIDADEITEMNF.PRODUTO = :VARPRODUTO
+                        AND VALIDADEITEMNF.ITEM = :VARITEM
+                        INTO :VARQTDEREGISTRADA;
+                        IF (:VARQTDEREGISTRADA IS NULL) THEN
+                            VARQTDEREGISTRADA = 0;
+                        IF (:VARQTDEREGISTRADA <> :VARQTDE) THEN BEGIN
+                            DELETE FROM VALIDADEITEMNF
+                            WHERE VALIDADEITEMNF.NUMERO = :NUMERO AND VALIDADEITEMNF.SERIE = :SERIE
+                            AND VALIDADEITEMNF.FILIAL = :FILIAL AND VALIDADEITEMNF.ORIGEM = :ORIGEM
+                            AND VALIDADEITEMNF.CLIFOR = :CLIFOR AND VALIDADEITEMNF.PRODUTO = :VARPRODUTO
+                            AND VALIDADEITEMNF.ITEM = :VARITEM;
+                            FOR
+                                SELECT VALIDADE, LOTE, QTDE, FABRICACAO
+                                FROM PROCEDURE_SELECIONARLOTE(:FILIAL, :VARPRODUTO, :VARQTDE, :VARINDICADORTIPOESTOQUE, :CLIFOR)
+                                INTO :VARVALIDADE, :VARLOTE, :VARQTDELOTE, :VARFABRICACAO
+                            DO BEGIN
+                                INSERT INTO VALIDADEITEMNF(VALIDADEITEMNF.NUMERO, VALIDADEITEMNF.SERIE, VALIDADEITEMNF.FILIAL, VALIDADEITEMNF.ORIGEM, VALIDADEITEMNF.CLIFOR, VALIDADEITEMNF.PRODUTO, VALIDADEITEMNF.ITEM, VALIDADEITEMNF.LOTE, VALIDADEITEMNF.VALIDADE, VALIDADEITEMNF.QTDE, VALIDADEITEMNF.FABRICACAO)
+                                VALUES(:NUMERO, :SERIE, :FILIAL, :ORIGEM, :CLIFOR, :VARPRODUTO, :VARITEM, :VARLOTE, :VARVALIDADE, :VARQTDELOTE, :VARFABRICACAO);
+                            END
+                        END
+                    END
+                END
+            END
+        END
+    END
+    SUSPEND;
+END^
+
+SET TERM ; ^
+

@@ -1,0 +1,15 @@
+﻿CREATE TABLE TESTE (
+    DATAHORA DOMAIN_DATAHORA,
+    TEXTO VARCHAR(150));
+
+SET TERM ^ ;
+
+CREATE trigger teste_bi0 for teste
+active before insert position 0
+AS
+begin
+  NEW.datahora = current_timestamp;
+end^
+
+SET TERM ; ^
+

@@ -1,0 +1,14 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_armazenamento_zerado for armazenamento
+active before update position 0
+AS
+BEGIN
+    IF (NEW.QUANTIDADE <= 0) THEN
+        NEW.ZERADO = CURRENT_TIMESTAMP;
+    ELSE
+        NEW.ZERADO = NULL;
+END^
+
+SET TERM ; ^
+

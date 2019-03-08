@@ -1,0 +1,33 @@
+﻿ALTER TABLE LOCAL
+ADD NOME DOMAIN_DESCRICAO;
+
+alter table LOCAL
+alter CODIGO position 1;
+
+alter table LOCAL
+alter NOME position 2;
+
+alter table LOCAL
+alter FILIAL position 3;
+
+alter table LOCAL
+alter LOCAL position 4;
+
+alter table LOCAL
+alter SEQUENCIA position 5;
+
+alter table LOCAL
+alter TIPOLOCALIZACAO position 6;
+
+alter table LOCAL
+alter TIPOESTRUTURA position 7;
+
+alter table LOCAL
+alter CODIGOESTRUTURADO position 8;
+
+alter table LOCAL
+alter ALOCAVEL position 9;
+
+alter table LOCAL
+alter PICKING position 10;
+
