@@ -1,0 +1,103 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setitempedido (
+    numero integer,
+    filial integer,
+    produto integer,
+    item integer,
+    qtde numeric(15,3),
+    unitario numeric(15,6),
+    percdesconto numeric(8,2),
+    valordesconto numeric(8,2),
+    total numeric(8,2),
+    qtdedevolvido numeric(15,3),
+    flex float,
+    valorvenda numeric(8,2),
+    valoripi numeric(8,2),
+    valoricms numeric(8,2),
+    recalcular varchar(1),
+    pesobruto numeric(15,3),
+    pesoliquido numeric(15,3),
+    enviar varchar(1),
+    valorcusto numeric(8,2),
+    valormedio numeric(8,2),
+    valorcustotabela numeric(8,2),
+    inclusao timestamp,
+    valorst numeric(8,2),
+    reservado varchar(1),
+    comissao numeric(8,2),
+    valorcomissao numeric(8,2),
+    qtdeorigem numeric(15,3),
+    valorfrete numeric(15,2),
+    valorfcep numeric(8,2))
+as
+BEGIN
+    INSERT INTO ITEMPEDIDO
+    (
+        NUMERO,
+        FILIAL,
+        PRODUTO,
+        ITEM,
+        QTDE,
+        UNITARIO,
+        PERCDESCONTO,
+        VALORDESCONTO,
+        TOTAL,
+        QTDEDEVOLVIDO,
+        FLEX,
+        VALORVENDA,
+        VALORIPI,
+        VALORICMS,
+        RECALCULAR,
+        PESOBRUTO,
+        PESOLIQUIDO,
+        ENVIAR,
+        VALORCUSTO,
+        VALORMEDIO,
+        VALORCUSTOTABELA,
+        INCLUSAO,
+        VALORST,
+        RESERVADO,
+        COMISSAO,
+        VALORCOMISSAO,
+        QTDEORIGEM,
+        VALORFRETE,
+        VALORFCEP
+    ) VALUES
+    (
+        :NUMERO,
+        :FILIAL,
+        :PRODUTO,
+        :ITEM,
+        :QTDE,
+        :UNITARIO,
+        :PERCDESCONTO,
+        :VALORDESCONTO,
+        :TOTAL,
+        :QTDEDEVOLVIDO,
+        :FLEX,
+        :VALORVENDA,
+        :VALORIPI,
+        :VALORICMS,
+        :RECALCULAR,
+        :PESOBRUTO,
+        :PESOLIQUIDO,
+        :ENVIAR,
+        :VALORCUSTO,
+        :VALORMEDIO,
+        :VALORCUSTOTABELA,
+        :INCLUSAO,
+        :VALORST,
+        :RESERVADO,
+        :COMISSAO,
+        :VALORCOMISSAO,
+        :QTDEORIGEM,
+        :VALORFRETE,
+        :VALORFCEP
+    );
+        
+        
+END^
+
+SET TERM ; ^
+
