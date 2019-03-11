@@ -48,7 +48,11 @@ CREATE OR ALTER procedure cus_setpedido (
     totalvalorvenda numeric(15,2),
     totalvariacao numeric(15,2),
     totalcomissao numeric(15,2),
-    cancelamento timestamp)
+    cancelamento timestamp,
+    duppedido varchar(10),
+    dupfuncionario integer,
+    dupdata date,
+    dupfilial integer)
 as
 declare variable varclifor integer;
 BEGIN
@@ -107,7 +111,11 @@ BEGIN
         TOTALVALORVENDA,
         TOTALVARIACAO,
         TOTALCOMISSAO,
-        CANCELAMENTO
+        CANCELAMENTO,
+        DUPPEDIDO,
+        DUPFUNCIONARIO,
+        DUPDATA,
+        DUPFILIAL
     ) VALUES
     (
         :NUMERO,
@@ -157,7 +165,11 @@ BEGIN
         :TOTALVALORVENDA,
         :TOTALVARIACAO,
         :TOTALCOMISSAO,
-        :CANCELAMENTO
+        :CANCELAMENTO,
+        :DUPPEDIDO,
+        :DUPFUNCIONARIO,
+        :DUPDATA,
+        :DUPFILIAL
     );
 END^
 
