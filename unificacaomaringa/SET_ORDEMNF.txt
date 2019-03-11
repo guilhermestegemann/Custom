@@ -1,0 +1,54 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setordemnf (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    origem varchar(1),
+    ordem varchar(20),
+    vcto date,
+    valor numeric(15,2),
+    alterada varchar(1),
+    historico integer,
+    parcela integer)
+as
+declare variable varclifor integer;
+BEGIN
+    SELECT NF.CLIFOR
+    FROM NF
+    WHERE NF.NUMERO = :NUMERO
+    AND NF.SERIE = :SERIE
+    AND NF.FILIAL = :FILIAL
+    AND NF.ORIGEM = :ORIGEM
+    INTO :VARCLIFOR;
+    INSERT INTO ORDEMNF
+    (
+        NUMERO,
+        SERIE,
+        FILIAL,
+        ORIGEM,
+        ORDEM,
+        VCTO,
+        VALOR,
+        ALTERADA,
+        HISTORICO,
+        PARCELA,
+        CLIFOR
+    ) VALUES
+    (
+        :NUMERO,
+        :SERIE,
+        :FILIAL,
+        :ORIGEM,
+        :ORDEM,
+        :VCTO,
+        :VALOR,
+        :ALTERADA,
+        :HISTORICO,
+        :PARCELA,
+        :VARCLIFOR
+    );
+END^
+
+SET TERM ; ^
+
