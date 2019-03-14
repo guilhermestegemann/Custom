@@ -1,0 +1,195 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setfinanceiro (
+    filial integer,
+    clifor varchar(18),
+    ordem varchar(20),
+    dataemissao date,
+    datavcto date,
+    valor numeric(8,2),
+    databaixa date,
+    juro numeric(8,2),
+    desconto numeric(8,2),
+    acrescimo numeric(8,2),
+    tarifa numeric(8,2),
+    valorbaixa numeric(8,2),
+    caixa integer,
+    formapagamento integer,
+    conta integer,
+    historico integer,
+    vendedor integer,
+    documento integer,
+    nossonumero domain_double,
+    obs varchar(4096),
+    tipo varchar(1),
+    percdesconto numeric(8,2),
+    datapgto date,
+    comissao numeric(15,4),
+    dataagendamento date,
+    impresso varchar(1),
+    vinculadofilial integer,
+    vinculadoclifor varchar(18),
+    vinculadoordem varchar(20),
+    vinculadodataemissao date,
+    documentoentregue varchar(1),
+    multa numeric(8,2),
+    imprimir varchar(1),
+    estornar varchar(1),
+    cancelado varchar(1),
+    origemfilial integer,
+    origemclifor varchar(18),
+    origemordem varchar(20),
+    origemdataemissao date,
+    reparcelado varchar(1),
+    centrocusto integer,
+    configuracao integer,
+    banco integer,
+    remessa integer,
+    remessafilial integer,
+    romaneio integer,
+    valordocumento numeric(15,2),
+    valororiginal numeric(15,2),
+    percjuro numeric(15,4),
+    percmulta numeric(15,4),
+    valorjurocalculado numeric(15,2))
+as
+declare variable varclifor integer;
+declare variable varvinclifor integer;
+declare variable varoriclifor integer;
+BEGIN
+    ROMANEIO = 1000||:ROMANEIO;
+    CAIXA = 9999||:CAIXA;
+    CONTA = 10||:CONTA;
+    CONFIGURACAO = 10||:CONFIGURACAO;
+    REMESSA = 100||:REMESSA;
+    /*CLIFOR*/
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARCLIFOR;
+    /*VINCULADOCLIFOR*/
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :VINCULADOCLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARVINCLIFOR;
+    /*ORIGEMCLIFOR*/
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :ORIGEMCLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARORICLIFOR;
+    INSERT INTO FINANCEIRO
+    (
+        FILIAL,
+        CLIFOR,
+        ORDEM,
+        DATAEMISSAO,
+        DATAVCTO,
+        VALOR,
+        DATABAIXA,
+        JURO,
+        DESCONTO,
+        ACRESCIMO,
+        TARIFA,
+        VALORBAIXA,
+        CAIXA,
+        FORMAPAGAMENTO,
+        CONTA,
+        HISTORICO,
+        VENDEDOR,
+        DOCUMENTO,
+        NOSSONUMERO,
+        OBS,
+        TIPO,
+        PERCDESCONTO,
+        DATAPGTO,
+        COMISSAO,
+        DATAAGENDAMENTO,
+        IMPRESSO,
+        VINCULADOFILIAL,
+        VINCULADOCLIFOR,
+        VINCULADOORDEM,
+        VINCULADODATAEMISSAO,
+        DOCUMENTOENTREGUE,
+        MULTA,
+        IMPRIMIR,
+        ESTORNAR,
+        CANCELADO,
+        ORIGEMFILIAL,
+        ORIGEMCLIFOR,
+        ORIGEMORDEM,
+        ORIGEMDATAEMISSAO,
+        REPARCELADO,
+        CENTROCUSTO,
+        CONFIGURACAO,
+        BANCO,
+        REMESSA,
+        REMESSAFILIAL,
+        ROMANEIO,
+        VALORDOCUMENTO,
+        VALORORIGINAL,
+        PERCJURO,
+        PERCMULTA,
+        VALORJUROCALCULADO
+    ) VALUES
+    (
+        :FILIAL,
+        :VARCLIFOR,
+        :ORDEM,
+        :DATAEMISSAO,
+        :DATAVCTO,
+        :VALOR,
+        :DATABAIXA,
+        :JURO,
+        :DESCONTO,
+        :ACRESCIMO,
+        :TARIFA,
+        :VALORBAIXA,
+        :CAIXA,
+        :FORMAPAGAMENTO,
+        :CONTA,
+        :HISTORICO,
+        :VENDEDOR,
+        :DOCUMENTO,
+        :NOSSONUMERO,
+        :OBS,
+        :TIPO,
+        :PERCDESCONTO,
+        :DATAPGTO,
+        :COMISSAO,
+        :DATAAGENDAMENTO,
+        :IMPRESSO,
+        :VINCULADOFILIAL,
+        :VARVINCLIFOR,
+        :VINCULADOORDEM,
+        :VINCULADODATAEMISSAO,
+        :DOCUMENTOENTREGUE,
+        :MULTA,
+        :IMPRIMIR,
+        :ESTORNAR,
+        :CANCELADO,
+        :ORIGEMFILIAL,
+        :VARORICLIFOR,
+        :ORIGEMORDEM,
+        :ORIGEMDATAEMISSAO,
+        :REPARCELADO,
+        :CENTROCUSTO,
+        :CONFIGURACAO,
+        :BANCO,
+        :REMESSA,
+        :REMESSAFILIAL,
+        :ROMANEIO,
+        :VALORDOCUMENTO,
+        :VALORORIGINAL,
+        :PERCJURO,
+        :PERCMULTA,
+        :VALORJUROCALCULADO
+    );
+        
+        
+END^
+
+SET TERM ; ^
+

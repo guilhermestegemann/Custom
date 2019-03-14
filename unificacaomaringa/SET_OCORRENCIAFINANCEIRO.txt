@@ -1,0 +1,44 @@
+﻿SET TERM ^ ;
+
+create or alter procedure cus_setocorrenciafinanceiro (
+    filial integer,
+    clifor varchar(18),
+    ordem varchar(20),
+    dataemissao date,
+    numeroregistro integer,
+    data date,
+    ocorrencia varchar(1),
+    complemento varchar(100))
+as
+declare variable varclifor integer;
+BEGIN
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARCLIFOR;
+    INSERT INTO OCORRENCIAFINANCEIRO
+    (
+        FILIAL,
+        CLIFOR,
+        ORDEM,
+        DATAEMISSAO,
+        NUMEROREGISTRO,
+        DATA,
+        OCORRENCIA,
+        COMPLEMENTO
+    ) VALUES
+    (
+        :FILIAL,
+        :VARCLIFOR,
+        :ORDEM,
+        :DATAEMISSAO, 
+        :NUMEROREGISTRO,
+        :DATA,
+        :OCORRENCIA,
+        :COMPLEMENTO
+    );
+END^
+
+SET TERM ; ^
+

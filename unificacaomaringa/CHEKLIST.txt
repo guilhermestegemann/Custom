@@ -42,6 +42,7 @@ CONTA
 CAIXA
 REMESSA
 FINANCEIRO
+OCORRENCIAFINANCEIRO
 ITEMREMESSA
 CONSUMO
 BONIFICACAO
@@ -53,6 +54,14 @@ ARMAZENAMENTO
 LEMBRAR DE REATIVAR CLIFORCONTATOVALIDAR
 LEMBRAR DE DESFAZER trigger_nf_somar comentar parte que recalcula os itens
 reativar trigger before delete pedido, itempedido, itempedidofatura, notafiscal
+
+
+Concatenações
+CAIXA -> 9999
+CONTA -> 10
+CONFIGURACAO -> 10
+REMESSA -> 100
+ROMANEO -> 1000
 
 
 
