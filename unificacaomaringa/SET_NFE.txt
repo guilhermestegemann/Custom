@@ -1,6 +1,7 @@
 ﻿SET TERM ^ ;
 
 CREATE OR ALTER procedure cus_setnfe (
+    clifor varchar(18),
     numero integer,
     serie varchar(5),
     filial integer,
@@ -42,6 +43,12 @@ BEGIN
     AND NF.FILIAL = :FILIAL
     AND NF.ORIGEM = :ORIGEM
     INTO :VARCLIFOR;
+    if (:VARCLIFOR IS NULL) then
+        SELECT FIRST 1 CLIFOR.CODIGO
+        FROM CLIFOR
+        WHERE CLIFOR.CNPJ = :CLIFOR
+        ORDER BY ATIVO, FILIAL DESC
+        INTO :VARCLIFOR;
     INSERT INTO NFE
     (
         CLIFOR,

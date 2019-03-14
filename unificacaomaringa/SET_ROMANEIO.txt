@@ -1,0 +1,83 @@
+﻿SET TERM ^ ;
+
+create or alter procedure cus_setromaneio (
+    codigo integer,
+    data date,
+    filial integer,
+    importado varchar(1),
+    faturado varchar(1),
+    obs varchar(1024),
+    fechado varchar(1),
+    conferido varchar(1),
+    entrega date,
+    datafechamento date,
+    horafechamento time,
+    funcionariofechamento integer,
+    rateio varchar(1),
+    motorista integer,
+    hora time,
+    reservado varchar(1),
+    kmsaida integer,
+    kmretorno integer,
+    datasaida date,
+    horasaida time,
+    dataretorno date,
+    horaretorno time)
+as
+BEGIN
+    CODIGO = 1000||:CODIGO;
+    INSERT INTO ROMANEIO
+    (
+        CODIGO,
+        DATA,
+        FILIAL,
+        IMPORTADO,
+        FATURADO,
+        OBS,
+        FECHADO,
+        CONFERIDO,
+        ENTREGA,
+        DATAFECHAMENTO,
+        HORAFECHAMENTO,
+        FUNCIONARIOFECHAMENTO,
+        RATEIO,
+        MOTORISTA,
+        HORA,
+        RESERVADO,
+        KMSAIDA,
+        KMRETORNO,
+        DATASAIDA,
+        HORASAIDA,
+        DATARETORNO,
+        HORARETORNO
+    ) VALUES
+    (
+        :CODIGO,
+        :DATA,
+        :FILIAL,
+        :IMPORTADO,
+        :FATURADO,
+        :OBS,
+        :FECHADO,
+        :CONFERIDO,
+        :ENTREGA,
+        :DATAFECHAMENTO,
+        :HORAFECHAMENTO,
+        :FUNCIONARIOFECHAMENTO,
+        :RATEIO,
+        :MOTORISTA,
+        :HORA,
+        :RESERVADO,
+        :KMSAIDA,
+        :KMRETORNO,
+        :DATASAIDA,
+        :HORASAIDA,
+        :DATARETORNO,
+        :HORARETORNO
+    );
+        
+        
+END^
+
+SET TERM ; ^
+

@@ -1,0 +1,65 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setitemnfdevolucao (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    origem varchar(1),
+    produto integer,
+    item integer,
+    motivodevolucao integer,
+    cancelado varchar(1),
+    qtdedevolvido numeric(18,3))
+as
+declare variable varnfreferenciada integer;
+declare variable varclifor integer;
+BEGIN
+    SELECT NF.CLIFOR
+    FROM NF
+    WHERE NF.NUMERO = :NUMERO
+    AND NF.SERIE = :SERIE
+    AND NF.FILIAL = :FILIAL
+    AND NF.ORIGEM = :ORIGEM
+    INTO :VARCLIFOR;
+    SELECT FIRST 1 NFREFERENCIADA.CODIGO
+    FROM NFREFERENCIADA
+    LEFT JOIN ITEMNFDEVOLUCAO ON ITEMNFDEVOLUCAO.NFREFERENCIADA = NFREFERENCIADA.CODIGO
+    WHERE NFREFERENCIADA.NUMERO = :NUMERO
+    AND NFREFERENCIADA.FILIAL = :FILIAL
+    AND NFREFERENCIADA.SERIE = :SERIE
+    AND NFREFERENCIADA.ORIGEM = :ORIGEM
+    AND NFREFERENCIADA.CLIFOR = :VARCLIFOR
+    AND ITEMNFDEVOLUCAO.NFREFERENCIADA IS NULL
+    INTO :VARNFREFERENCIADA;
+    INSERT INTO ITEMNFDEVOLUCAO
+    (
+        NUMERO,
+        SERIE,
+        FILIAL,
+        ORIGEM,
+        PRODUTO,
+        ITEM,
+        MOTIVODEVOLUCAO,
+        CANCELADO,
+        CLIFOR,
+        NFREFERENCIADA,
+        QTDEDEVOLVIDO
+    ) VALUES
+    (
+        :NUMERO,
+        :SERIE,
+        :FILIAL,
+        :ORIGEM,
+        :PRODUTO,
+        :ITEM,
+        :MOTIVODEVOLUCAO,
+        :CANCELADO,
+        :VARCLIFOR,
+        :VARNFREFERENCIADA,
+        :QTDEDEVOLVIDO
+    );
+        
+END^
+
+SET TERM ; ^
+

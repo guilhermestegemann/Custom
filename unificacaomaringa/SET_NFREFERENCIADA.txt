@@ -1,0 +1,72 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setnfreferenciada (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    origem varchar(1),
+    emissao date,
+    modelo varchar(3),
+    nfnumero integer,
+    nfserie varchar(5),
+    nffilial integer,
+    nforigem varchar(1),
+    chaveacesso varchar(44),
+    MENSAGEMFISCAL INTEGER)
+as
+declare variable varclifor integer;
+declare variable varnfclifor integer;
+BEGIN
+    SELECT NF.CLIFOR
+    FROM NF
+    WHERE NF.NUMERO = :NUMERO
+    AND NF.SERIE = :SERIE
+    AND NF.FILIAL = :FILIAL
+    AND NF.ORIGEM = :ORIGEM
+    INTO :VARCLIFOR;
+    --REF
+    SELECT NF.CLIFOR
+    FROM NF
+    WHERE NF.NUMERO = :NFNUMERO
+    AND NF.SERIE = :NFSERIE
+    AND NF.FILIAL = :NFFILIAL
+    AND NF.ORIGEM = :NFORIGEM
+    INTO :VARNFCLIFOR;
+    INSERT INTO NFREFERENCIADA
+    (
+        CLIFOR,
+        NFCLIFOR,
+        NUMERO,
+        SERIE,
+        FILIAL,
+        ORIGEM,
+        EMISSAO,
+        MODELO,
+        NFNUMERO,
+        NFSERIE,
+        NFFILIAL,
+        NFORIGEM,
+        CHAVEACESSO,
+        MENSAGEMFISCAL
+    ) VALUES
+    (
+        :VARCLIFOR,
+        :VARNFCLIFOR,
+        :NUMERO,
+        :SERIE,
+        :FILIAL,
+        :ORIGEM,
+        :EMISSAO,
+        :MODELO,
+        :NFNUMERO,
+        :NFSERIE,
+        :NFFILIAL,
+        :NFORIGEM,
+        :CHAVEACESSO,
+        :MENSAGEMFISCAL
+    );
+        
+END^
+
+SET TERM ; ^
+
