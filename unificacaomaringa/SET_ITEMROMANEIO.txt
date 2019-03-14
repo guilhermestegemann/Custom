@@ -1,0 +1,40 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setitemromaneio (
+    romaneio integer,
+    numero integer,
+    item integer,
+    tipo varchar(1),
+    conferido varchar(1),
+    serie varchar(5),
+    baixado varchar(1),
+    infadicional varchar(10))
+as
+BEGIN
+    ROMANEIO = 1000||:ROMANEIO;
+    INSERT INTO ITEMROMANEIO
+    (
+        ROMANEIO,
+        NUMERO,
+        ITEM,
+        TIPO,
+        CONFERIDO,
+        SERIE,
+        BAIXADO,
+        INFADICIONAL
+    ) VALUES
+    (
+        :ROMANEIO,
+        :NUMERO,
+        :ITEM,
+        :TIPO,
+        :CONFERIDO,
+        :SERIE,
+        :BAIXADO,
+        :INFADICIONAL
+    );
+        
+END^
+
+SET TERM ; ^
+
