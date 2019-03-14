@@ -1,0 +1,65 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setconfiguracao (
+    codigo integer,
+    tipodocumento integer,
+    nome varchar(20),
+    altura integer,
+    largura integer,
+    salto integer,
+    linhaitem integer,
+    linhafatura integer,
+    nrlinhaitem integer,
+    colunafatura integer,
+    nrlinhafatura integer,
+    nrcolunafatura integer,
+    larguracolunafatura integer,
+    linhaservico integer,
+    linhacfop integer,
+    ativo varchar(1))
+as
+BEGIN
+    CODIGO = 10||:CODIGO;
+    INSERT INTO CONFIGURACAO
+    (
+        CODIGO,
+        TIPODOCUMENTO,
+        NOME,
+        ALTURA,
+        LARGURA,
+        SALTO,
+        LINHAITEM,
+        LINHAFATURA,
+        NRLINHAITEM,
+        COLUNAFATURA,
+        NRLINHAFATURA,
+        NRCOLUNAFATURA,
+        LARGURACOLUNAFATURA,
+        LINHASERVICO,
+        LINHACFOP,
+        ATIVO
+    ) VALUES
+    (
+        :CODIGO,
+        :TIPODOCUMENTO,
+        :NOME,
+        :ALTURA,
+        :LARGURA,
+        :SALTO,
+        :LINHAITEM,
+        :LINHAFATURA,
+        :NRLINHAITEM,
+        :COLUNAFATURA,
+        :NRLINHAFATURA,
+        :NRCOLUNAFATURA,
+        :LARGURACOLUNAFATURA,
+        :LINHASERVICO,
+        :LINHACFOP,
+        :ATIVO
+    );
+
+
+END^
+
+SET TERM ; ^
+

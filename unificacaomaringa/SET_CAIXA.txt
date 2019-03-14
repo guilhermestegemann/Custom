@@ -1,0 +1,40 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setcaixa (
+    data date,
+    conta integer,
+    historico integer,
+    complemento varchar(200),
+    valor numeric(8,2),
+    centrocusto integer,
+    romaneio integer,
+    codigo INTEGER)
+as
+BEGIN
+    CONTA = 10||:CONTA;
+    ROMANEIO = 1000||:ROMANEIO;
+    CODIGO = 9999||:CODIGO;
+    INSERT INTO CAIXA
+    (
+        DATA,
+        CONTA,
+        HISTORICO,
+        COMPLEMENTO,
+        VALOR,
+        CENTROCUSTO,
+        ROMANEIO,
+        CODIGO
+    ) VALUES (
+        :DATA,
+        :CONTA,
+        :HISTORICO,
+        :COMPLEMENTO,
+        :VALOR, 
+        :CENTROCUSTO,
+        :ROMANEIO,
+        :CODIGO
+    );
+END^
+
+SET TERM ; ^
+

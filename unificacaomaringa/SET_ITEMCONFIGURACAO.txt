@@ -1,0 +1,58 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setitemconfiguracao (
+    configuracao integer,
+    item integer,
+    linha integer,
+    coluna integer,
+    caracter integer,
+    campo varchar(30),
+    tipo varchar(3),
+    conteudo varchar(200),
+    tamanho smallint,
+    alinhamento varchar(1),
+    posicao varchar(1),
+    negrito varchar(1),
+    italico varchar(1),
+    fonte varchar(40))
+as
+BEGIN
+
+    CONFIGURACAO = 10||:CONFIGURACAO;
+    INSERT INTO ITEMCONFIGURACAO
+    (
+        CONFIGURACAO,
+        ITEM,
+        LINHA,
+        COLUNA,
+        CARACTER,
+        CAMPO,
+        TIPO,
+        CONTEUDO,
+        TAMANHO,
+        ALINHAMENTO,
+        POSICAO,
+        NEGRITO,
+        ITALICO,
+        FONTE
+    ) VALUES
+    (
+        :CONFIGURACAO,
+        :ITEM,
+        :LINHA,
+        :COLUNA,
+        :CARACTER,
+        :CAMPO,
+        :TIPO,
+        :CONTEUDO,
+        :TAMANHO,
+        :ALINHAMENTO,
+        :POSICAO,
+        :NEGRITO,
+        :ITALICO,
+        :FONTE
+    );
+END^
+
+SET TERM ; ^
+
