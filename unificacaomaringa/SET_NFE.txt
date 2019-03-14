@@ -1,0 +1,117 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setnfe (
+    numero integer,
+    serie varchar(5),
+    filial integer,
+    origem varchar(1),
+    chaveacesso varchar(44),
+    cnf varchar(9),
+    veraplic varchar(20),
+    chnfe varchar(44),
+    nprot varchar(15),
+    digval varchar(28),
+    cstat varchar(3),
+    autorizada varchar(1),
+    xml varchar(20000),
+    tpamb varchar(1),
+    protxml varchar(16384),
+    pedcancxml varchar(16384),
+    canccstat varchar(3),
+    cancdhrecbto varchar(25),
+    cancnprot varchar(15),
+    cancxml varchar(20000),
+    pedinutxml varchar(20000),
+    inutcstat varchar(3),
+    inutdhrecbto varchar(20),
+    inutnprot varchar(15),
+    inutxml varchar(20000),
+    contingencia integer,
+    formaemissao varchar(1),
+    enviadoemail integer,
+    enviartdocs varchar(1),
+    enviadotdocs timestamp,
+    versao varchar(6))
+as
+declare variable varclifor integer;
+BEGIN
+    SELECT NF.CLIFOR
+    FROM NF
+    WHERE NF.NUMERO = :NUMERO
+    AND NF.SERIE = :SERIE
+    AND NF.FILIAL = :FILIAL
+    AND NF.ORIGEM = :ORIGEM
+    INTO :VARCLIFOR;
+    INSERT INTO NFE
+    (
+        CLIFOR,
+        NUMERO,
+        SERIE,
+        FILIAL,
+        ORIGEM,
+        CHAVEACESSO,
+        CNF,
+        VERAPLIC,
+        CHNFE,
+        NPROT,
+        DIGVAL,
+        CSTAT,
+        AUTORIZADA,
+        XML,
+        TPAMB,
+        PROTXML,
+        PEDCANCXML,
+        CANCCSTAT,
+        CANCDHRECBTO,
+        CANCNPROT,
+        CANCXML,
+        PEDINUTXML,
+        INUTCSTAT,
+        INUTDHRECBTO,
+        INUTNPROT,
+        INUTXML,
+        CONTINGENCIA,
+        FORMAEMISSAO,
+        ENVIADOEMAIL,
+        ENVIARTDOCS,
+        ENVIADOTDOCS,
+        VERSAO
+    ) VALUES
+    (
+        :VARCLIFOR,
+        :NUMERO,
+        :SERIE,
+        :FILIAL,
+        :ORIGEM,
+        :CHAVEACESSO,
+        :CNF,
+        :VERAPLIC,
+        :CHNFE,
+        :NPROT,
+        :DIGVAL,
+        :CSTAT,
+        :AUTORIZADA,
+        :XML,
+        :TPAMB,
+        :PROTXML,
+        :PEDCANCXML,
+        :CANCCSTAT,
+        :CANCDHRECBTO,
+        :CANCNPROT,
+        :CANCXML,
+        :PEDINUTXML,
+        :INUTCSTAT,
+        :INUTDHRECBTO,
+        :INUTNPROT,
+        :INUTXML,
+        :CONTINGENCIA,
+        :FORMAEMISSAO,
+        :ENVIADOEMAIL,
+        :ENVIARTDOCS,
+        :ENVIADOTDOCS,
+        :VERSAO
+    );
+END^
+
+SET TERM ; ^
+
