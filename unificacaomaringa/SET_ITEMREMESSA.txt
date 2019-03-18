@@ -1,0 +1,45 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_setitemremessa (
+    remessa integer,
+    filial integer,
+    clifor varchar(18),
+    ordem varchar(20),
+    dataemissao date,
+    nossonumero domain_double,
+    registrado varchar(1),
+    ocorrencia varchar(1))
+as
+declare variable varclifor integer;
+BEGIN
+    REMESSA = 100||:REMESSA;
+    SELECT FIRST 1 CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CLIFOR
+    ORDER BY ATIVO, FILIAL DESC
+    INTO :VARCLIFOR;
+    INSERT INTO ITEMREMESSA
+    (
+        REMESSA,
+        FILIAL,
+        CLIFOR,
+        ORDEM,
+        DATAEMISSAO,
+        NOSSONUMERO,
+        REGISTRADO,
+        OCORRENCIA
+    ) VALUES
+    (
+        :REMESSA,
+        :FILIAL,
+        :VARCLIFOR,
+        :ORDEM,
+        :DATAEMISSAO,
+        :NOSSONUMERO,
+        :REGISTRADO,
+        :OCORRENCIA
+    );
+END^
+
+SET TERM ; ^
+

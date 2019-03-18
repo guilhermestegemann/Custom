@@ -1,0 +1,31 @@
+﻿SET TERM ^ ;
+
+create or alter procedure cus_setremessa (
+    codigo integer,
+    filial integer,
+    data timestamp,
+    configuracao integer,
+    sequencia integer)
+as
+BEGIN
+    CODIGO = 100||:CODIGO;
+    CONFIGURACAO = 10||:CONFIGURACAO;
+    INSERT INTO REMESSA
+    (
+        CODIGO,
+        FILIAL,
+        DATA,
+        CONFIGURACAO,
+        SEQUENCIA
+    ) VALUES
+    (
+        :CODIGO,
+        :FILIAL,
+        :DATA,
+        :CONFIGURACAO,
+        :SEQUENCIA
+    );
+END^
+
+SET TERM ; ^
+
