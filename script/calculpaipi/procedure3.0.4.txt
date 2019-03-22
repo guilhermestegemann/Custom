@@ -1,0 +1,59 @@
+﻿SET TERM ^ ;
+
+CREATE OR ALTER PROCEDURE PROCEDURE_CALCULAR_IPI (
+    fatura domain_varchar01,
+    produto domain_inteiro,
+    filial domain_inteiro,
+    qtde domain_valor3d,
+    valorcontabil domain_valor2d,
+    fretecomporbaseipi varchar(1),
+    valorfrete domain_valor2d,
+    valoroutro domain_valor2d)
+returns (
+    baseipi domain_valor2d,
+    percipi domain_valor4d,
+    valoripi domain_valor2d,
+    valorisentoipi domain_valor2d,
+    valorpautaipi domain_valor2d,
+    cstipi domain_varchar02)
+as
+declare variable varvalorpautaipi domain_valor2d;
+declare variable varbaseipi domain_valor2d;
+declare variable varindustria varchar(1);
+BEGIN
+  VALORIPI = 0;
+  SELECT
+     CASE WHEN (:FATURA = 'S') THEN TRIBUTACAOIPI.CST ELSE TRIBUTACAOIPI.CSTENTRADA END,
+     CASE WHEN (:FATURA = 'S') THEN TRIBUTACAOIPI.PERCIPI ELSE TRIBUTACAOIPI.PERCIPIENTRADA END,
+     CASE WHEN (:FATURA = 'S') THEN TRIBUTACAOIPI.BASEIPI ELSE TRIBUTACAOIPI.BASEIPIENTRADA END,
+     ESTOQUE.VALORPAUTAIPI
+  FROM ESTOQUE
+  INNER JOIN TRIBUTACAOIPI ON TRIBUTACAOIPI.CODIGO = ESTOQUE.TRIBUTACAOIPI
+  WHERE ESTOQUE.PRODUTO = :PRODUTO AND ESTOQUE.FILIAL = :FILIAL
+  INTO :CSTIPI,  :PERCIPI, :VARBASEIPI, VARVALORPAUTAIPI;
+  SELECT FILIAL.INDUSTRIA FROM FILIAL
+  WHERE FILIAL.CODIGO = :FILIAL
+  INTO :VARINDUSTRIA;
+
+     IF (:PERCIPI IS NULL) THEN
+         PERCIPI = 0;
+     PERCIPI = :PERCIPI;
+     IF (VARVALORPAUTAIPI IS NULL) THEN
+         VALORPAUTAIPI = 0;
+     IF (VARVALORPAUTAIPI = 0) THEN BEGIN
+         IF (FRETECOMPORBASEIPI = 'S' AND :VARINDUSTRIA = 'S') THEN BEGIN
+             BASEIPI = (:VALORCONTABIL + VALORFRETE + VALOROUTRO) * (:VARBASEIPI / 100.0);
+         END ELSE
+             BASEIPI = :VALORCONTABIL * (:VARBASEIPI / 100.0);
+         VALORIPI = :BASEIPI * (:PERCIPI / 100.0);
+         VALORISENTOIPI = :VALORCONTABIL - :BASEIPI;
+     END ELSE BEGIN
+         VALORISENTOIPI = 0;
+         PERCIPI = 0;
+         BASEIPI = 0;
+         VALORIPI = VARVALORPAUTAIPI * :QTDE;
+     END
+  SUSPEND;
+END^
+
+SET TERM ; ^
