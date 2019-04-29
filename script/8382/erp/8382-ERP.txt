@@ -1,0 +1,514 @@
+﻿ALTER TABLE PESQUISA
+ADD IDORIGEM DOM_ID_ISN;
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure get_filial (
+    cnpj dom_str_18_nn)
+returns (
+    codigo dom_int)
+as
+BEGIN
+    SELECT FILIAL.CODIGO
+    FROM FILIAL
+    WHERE FILIAL.CNPJ = :CNPJ
+    INTO :CODIGO;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_pesquisa (
+    distribuidor dom_str_18_nn,
+    idorigem dom_id,
+    nome dom_str_60_nn,
+    datainicial dom_dat_nn,
+    datafinal dom_dat_nn,
+    obrigatoria dom_str_01_nn,
+    finalizada dom_str_01_nn,
+    cancelada dom_str_01_nn,
+    adiamentomaximo dom_int_nn,
+    exibirmargem dom_str_01_nn)
+returns (
+    id dom_id)
+as
+declare variable idfilial dom_int;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+
+    UPDATE OR INSERT INTO PESQUISA(PESQUISA.IDORIGEM, PESQUISA.FILIAL, PESQUISA.NOME, PESQUISA.DATAINICIAL, PESQUISA.DATAFINAL, PESQUISA.OBRIGATORIA, PESQUISA.FINALIZADA, PESQUISA.CANCELADA, PESQUISA.ADIAMENTOMAXIMO, PESQUISA.EXIGIRIMAGEM)
+    VALUES (:IDORIGEM, :IDFILIAL, :NOME, :DATAINICIAL, :DATAFINAL, :OBRIGATORIA, :FINALIZADA, :CANCELADA, :ADIAMENTOMAXIMO, :EXIBIRMARGEM)
+    MATCHING (PESQUISA.IDORIGEM)
+    RETURNING PESQUISA.ID INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+
+
+
+ALTER TABLE PESQUISACLIFOR
+ADD IDORIGEM DOM_ID_ISN;
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure get_clifor (
+    cnpjcpf dom_str_18_nn)
+returns (
+    codigo dom_int)
+as
+BEGIN
+    SELECT FIRST(1) CLIFOR.CODIGO
+    FROM CLIFOR
+    WHERE CLIFOR.CNPJ = :CNPJCPF
+	ORDER BY ATIVO DESC
+    INTO :CODIGO;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure get_funcionario (
+    cnpjcpf dom_str_18_nn)
+returns (
+    codigo dom_int)
+as
+BEGIN
+    SELECT FIRST(1) FUNCIONARIO.CODIGO
+    FROM FUNCIONARIO
+    WHERE FUNCIONARIO.CPF = :CNPJCPF
+	ORDER BY ATIVO DESC
+    INTO :CODIGO;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+create or alter procedure get_pesquisa (
+    idorigem dom_id,
+    idfilial dom_int_nn)
+returns (
+    id dom_id_isn)
+as
+BEGIN
+    SELECT PESQUISA.ID
+    FROM PESQUISA
+    WHERE PESQUISA.FILIAL = :IDFILIAL
+    AND PESQUISA.IDORIGEM = :IDORIGEM
+    INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_pesquisaclifor (
+    distribuidor dom_str_18_nn,
+    idorigem dom_id,
+    idorigempesquisa dom_id,
+    cliente dom_str_18_nn,
+    funcionario dom_str_18_nn,
+    adiamento dom_int_nn,
+    datarealizado dom_dat)
+returns (
+    id dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idcliente dom_int;
+declare variable idfuncionario dom_int;
+declare variable idpesquisa dom_id_isn;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+    SELECT CODIGO FROM GET_CLIFOR(:CLIENTE) INTO :IDCLIENTE;
+    IF (:IDCLIENTE IS NULL) THEN
+        EXCEPTION EXCEPTION_CLIFORINVALIDO;
+    SELECT CODIGO FROM GET_FUNCIONARIO(:FUNCIONARIO) INTO :IDFUNCIONARIO;
+    IF (:IDFUNCIONARIO IS NULL) THEN
+        EXCEPTION EXCEPTION_FUNCIONARIOINVALIDO;
+    SELECT ID FROM GET_PESQUISA(:IDORIGEMPESQUISA, :IDFILIAL) INTO :IDPESQUISA;
+    IF (:IDPESQUISA IS NULL) THEN
+        EXCEPTION EXCEPTION_PESQUISAINVALIDA;
+
+    UPDATE OR INSERT INTO PESQUISACLIFOR(PESQUISACLIFOR.PESQUISA, PESQUISACLIFOR.CLIFOR, PESQUISACLIFOR.FUNCIONARIO, PESQUISACLIFOR.ADIAMENTO, PESQUISACLIFOR.DATAREALIZADO, PESQUISACLIFOR.IDORIGEM)
+    VALUES (:IDPESQUISA, :IDCLIENTE, :IDFUNCIONARIO, :ADIAMENTO, :DATAREALIZADO, :IDORIGEM)
+    MATCHING(PESQUISACLIFOR.IDORIGEM)
+    RETURNING PESQUISACLIFOR.ID INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure del_pesquisaclifor (
+    distribuidor dom_str_18_nn,
+    idorigem dom_id,
+    idorigempesquisa dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idpesquisa dom_id_isn;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+    SELECT ID FROM GET_PESQUISA(:IDORIGEMPESQUISA, :IDFILIAL) INTO :IDPESQUISA;
+    IF (:IDPESQUISA IS NULL) THEN
+        EXCEPTION EXCEPTION_PESQUISAINVALIDA;
+
+    DELETE FROM PESQUISACLIFOR
+    WHERE PESQUISACLIFOR.IDORIGEM = :IDORIGEM
+    AND PESQUISACLIFOR.PESQUISA = :IDPESQUISA;
+END^
+
+SET TERM ; ^
+
+ALTER TABLE PESQUISAPRODUTO
+ADD IDORIGEM DOM_ID_ISN;
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure get_produto (
+    barras dom_str_14_nn)
+returns (
+    codigo dom_int)
+as
+BEGIN
+    SELECT PRODUTO.CODIGO
+    FROM PRODUTO
+    WHERE PRODUTO.BARRAS = :BARRAS
+    INTO :CODIGO;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_pesquisaproduto (
+    distribuidor dom_str_18_nn,
+    idorigem dom_id,
+    idorigempesquisa dom_id,
+    produto dom_str_14_nn,
+    registrarconcorrente dom_str_01_nn)
+returns (
+    id dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idproduto dom_int;
+declare variable idpesquisa dom_id_isn;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+    SELECT CODIGO FROM GET_PRODUTO(:PRODUTO) INTO :IDPRODUTO;
+    IF (:IDPRODUTO IS NULL) THEN
+        EXCEPTION EXCEPTION_PRODUTOINVALIDO;
+    SELECT ID FROM GET_PESQUISA(:IDORIGEMPESQUISA, :IDFILIAL) INTO :IDPESQUISA;
+    IF (:IDPESQUISA IS NULL) THEN
+        EXCEPTION EXCEPTION_PESQUISAINVALIDA;
+
+    UPDATE OR INSERT INTO PESQUISAPRODUTO(PESQUISAPRODUTO.PESQUISA,  PESQUISAPRODUTO.PRODUTO, PESQUISAPRODUTO.REGISTRARCONCORRENTE, PESQUISAPRODUTO.IDORIGEM)
+    VALUES (:IDPESQUISA, :IDPRODUTO, :REGISTRARCONCORRENTE, :IDORIGEM)
+    MATCHING(PESQUISAPRODUTO.IDORIGEM)
+    RETURNING PESQUISAPRODUTO.ID INTO :ID;
+    SUSPEND;
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure del_pesquisaproduto (
+    distribuidor dom_str_18_nn,
+    idorigem dom_id,
+    idorigempesquisa dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idpesquisa dom_id_isn;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+    SELECT ID FROM GET_PESQUISA(:IDORIGEMPESQUISA, :IDFILIAL) INTO :IDPESQUISA;
+    IF (:IDPESQUISA IS NULL) THEN
+        EXCEPTION EXCEPTION_PESQUISAINVALIDA;
+
+    DELETE FROM PESQUISAPRODUTO
+    WHERE PESQUISAPRODUTO.IDORIGEM = :IDORIGEM
+    AND PESQUISAPRODUTO.PESQUISA = :IDPESQUISA;
+END^
+
+SET TERM ; ^
+
+
+
+ALTER TABLE PESQUISAREALIZADA
+ADD REPLICAR DOM_STR_01;
+
+SET TERM ^ ;
+
+CREATE trigger trigger_pesquisarealizada_biu for pesquisarealizada
+active before insert or update position 0
+AS
+BEGIN
+    NEW.REPLICAR = 'S';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE trigger trigger_pesquisarealizada_repli for pesquisarealizada
+active before insert or update position 99
+AS
+BEGIN
+    NEW.REPLICAR = 'N';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_pesquisarealizada for pesquisarealizada
+active before insert or update position 10
+AS
+DECLARE VARIABLE TERMINAL INTEGER;
+DECLARE VARIABLE SCRIPT VARCHAR(4096);
+DECLARE VARIABLE DISTRIBUIDOR VARCHAR(18);
+DECLARE VARIABLE IDORIGEMPESQUISACLIFOR DOM_ID_ISN;
+DECLARE VARIABLE IDORIGEMPESQUISAPRODUTO DOM_ID_ISN;
+BEGIN
+    FOR
+        SELECT TERMINAL.CODIGO, FILIAL.CNPJ, PESQUISACLIFOR.IDORIGEM, PESQUISAPRODUTO.IDORIGEM
+        FROM TERMINAL
+        INNER JOIN FILIAL ON FILIAL.CODIGO = TERMINAL.FILIAL
+        INNER JOIN PESQUISACLIFOR ON PESQUISACLIFOR.ID = NEW.PESQUISACLIFOR
+        INNER JOIN PESQUISAPRODUTO ON PESQUISAPRODUTO.ID = NEW.PESQUISAPRODUTO
+        INNER JOIN PESQUISA ON PESQUISA.ID = PESQUISAPRODUTO.PESQUISA
+                           AND PESQUISA.ID = PESQUISACLIFOR.PESQUISA
+                           AND PESQUISA.FILIAL = TERMINAL.FILIAL --Garantir que replique apenas pesquisas da filial
+                           AND PESQUISA.IDORIGEM IS NOT NULL --Gerantir que replique apenas pesquisas que foram cadastradas no analytics
+        WHERE ((NEW.REPLICAR = 'S') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'N'))
+        OR ((NEW.REPLICAR = 'C') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'S'))
+        INTO :TERMINAL, :DISTRIBUIDOR, :IDORIGEMPESQUISACLIFOR, :IDORIGEMPESQUISAPRODUTO
+    DO BEGIN
+        SCRIPT = 'EXECUTE PROCEDURE '
+              || 'SET_PESQUISAREALIZADA'
+              || '('  || '''' || UUID_TO_CHAR(NEW.ID) || ''''
+              || ', ' || '''' || :DISTRIBUIDOR || ''''
+              || ', ' || :IDORIGEMPESQUISACLIFOR
+              || ', ' || :IDORIGEMPESQUISAPRODUTO
+              || ', ' || NEW.TIPOACAO
+              || ', ' || CASE WHEN NEW.MOTIVOREJEITARPESQUISA IS NULL THEN 'NULL' ELSE NEW.MOTIVOREJEITARPESQUISA END
+              || ', ' || CASE WHEN NEW.DATAREALIZADA IS NULL THEN 'NULL' ELSE '''' || NEW.DATAREALIZADA || '''' END
+              || ', ' || NEW.VALORNORMAL
+              || ', ' || NEW.VALORACAO
+              || ', ' || CASE WHEN ((NEW.OBS IS NULL) OR (TRIM(NEW.OBS) = '')) THEN 'NULL' ELSE '''' || NEW.OBS || '''' END
+              || ', ' || '''' || NEW.ACAOCONCORRENTE || ''''
+              || ')';
+        INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+    END
+END^
+
+SET TERM ; ^
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure set_produtomarcaconcorrente (
+    distribuidor dom_str_18_nn,
+    produto dom_str_14_nn,
+    marcaconcorrente dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idproduto dom_int;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+
+    SELECT CODIGO FROM GET_PRODUTO(:PRODUTO) INTO :IDPRODUTO;
+    IF (:IDPRODUTO IS NULL) THEN
+        EXCEPTION EXCEPTION_PRODUTOINVALIDO;
+
+    UPDATE OR INSERT INTO PRODUTOMARCACONCORRENTE(PRODUTOMARCACONCORRENTE.PRODUTO, PRODUTOMARCACONCORRENTE.MARCACONCORRENTE)
+    VALUES (:IDPRODUTO, :MARCACONCORRENTE)
+    MATCHING (PRODUTOMARCACONCORRENTE.PRODUTO, PRODUTOMARCACONCORRENTE.MARCACONCORRENTE);
+END^
+
+SET TERM ; ^
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER procedure del_produtomarcaconcorrente (
+    distribuidor dom_str_18_nn,
+    produto dom_str_14_nn,
+    marcaconcorrente dom_id)
+as
+declare variable idfilial dom_int;
+declare variable idproduto dom_int;
+BEGIN
+    SELECT CODIGO FROM GET_FILIAL(:DISTRIBUIDOR) INTO :IDFILIAL;
+    IF (:IDFILIAL IS NULL) THEN
+        EXCEPTION EXCEPTION_FILIALINVALIDA;
+    SELECT CODIGO FROM GET_PRODUTO(:PRODUTO) INTO :IDPRODUTO;
+    IF (:IDPRODUTO IS NULL) THEN
+        EXCEPTION EXCEPTION_PRODUTOINVALIDO;
+
+    DELETE FROM PRODUTOMARCACONCORRENTE
+    WHERE PRODUTOMARCACONCORRENTE.PRODUTO = :IDPRODUTO
+    AND PRODUTOMARCACONCORRENTE.MARCACONCORRENTE = :MARCACONCORRENTE;
+END^
+
+SET TERM ; ^
+
+ALTER TABLE PESQUISACONCORRENTE
+ADD REPLICAR DOM_STR_01;
+
+SET TERM ^ ;
+
+CREATE trigger trigger_pesquisaconc_biu for pesquisaconcorrente
+active before insert or update position 0
+AS
+BEGIN
+    NEW.REPLICAR = 'S';
+END^
+
+SET TERM ; ^
+
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger trigger_pesquisaconc_replicar for pesquisaconcorrente
+active before insert or update position 99
+AS
+BEGIN
+    NEW.REPLICAR = 'N';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_pesquisaconcorrente for pesquisaconcorrente
+active before insert or update position 10
+AS
+DECLARE VARIABLE TERMINAL INTEGER;
+DECLARE VARIABLE SCRIPT VARCHAR(4096);
+DECLARE VARIABLE DISTRIBUIDOR VARCHAR(18);
+BEGIN
+    FOR
+        SELECT TERMINAL.CODIGO, FILIAL.CNPJ
+        FROM TERMINAL
+        INNER JOIN FILIAL ON FILIAL.CODIGO = TERMINAL.FILIAL
+        INNER JOIN PESQUISAREALIZADA ON PESQUISAREALIZADA.ID = NEW.PESQUISAREALIZADA
+        INNER JOIN PESQUISACLIFOR ON PESQUISACLIFOR.ID = PESQUISAREALIZADA.PESQUISACLIFOR
+        INNER JOIN PESQUISAPRODUTO ON PESQUISAPRODUTO.ID = PESQUISAREALIZADA.PESQUISAPRODUTO
+        INNER JOIN PESQUISA ON PESQUISA.ID = PESQUISAPRODUTO.PESQUISA
+                           AND PESQUISA.ID = PESQUISACLIFOR.PESQUISA
+                           AND PESQUISA.FILIAL = TERMINAL.FILIAL --Garantir Que Replique Apenas Pesquisas Da Filial
+                           AND PESQUISA.IDORIGEM IS NOT NULL --Garantir Que Replique Apenas Pesquisas Que Foram Cadastradas No Analytics
+        WHERE ((NEW.REPLICAR = 'S') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'N'))
+        OR ((NEW.REPLICAR = 'C') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'S'))
+        INTO :TERMINAL, :DISTRIBUIDOR
+    DO BEGIN
+        SCRIPT = 'EXECUTE PROCEDURE '
+              || 'SET_PESQUISACONCORRENTE'
+              || '('  || '''' || UUID_TO_CHAR(NEW.ID) || ''''
+              || ', ' || '''' || UUID_TO_CHAR(NEW.PESQUISAREALIZADA) || ''''
+              || ', ' || '''' || :DISTRIBUIDOR || ''''
+              || ', ' || NEW.TIPOACAO
+              || ', ' || CASE WHEN NEW.MOTIVOREJEITARPESQUISA IS NULL THEN 'NULL' ELSE NEW.MOTIVOREJEITARPESQUISA END
+              || ', ' || NEW.MARCACONCORRENTE
+              || ', ' || NEW.VALORNORMAL
+              || ', ' || NEW.VALORACAO
+              || ', ' || CASE WHEN ((NEW.OBS IS NULL) OR (TRIM(NEW.OBS) = '')) THEN 'NULL' ELSE '''' || NEW.OBS || '''' END
+              || ')';
+        INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+    END
+END^
+
+SET TERM ; ^
+
+
+ALTER TABLE PESQUISA
+ADD REPLICAR DOM_STR_01;
+
+SET TERM ^ ;
+
+CREATE trigger trigger_pesquisa_biu for pesquisa
+active before insert or update position 0
+AS
+BEGIN
+    NEW.REPLICAR = 'S';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE trigger trigger_pesquisa_replicar for pesquisa
+active before insert or update position 99
+AS
+BEGIN
+    NEW.REPLICAR = 'N';
+END^
+
+SET TERM ; ^
+
+SET TERM ^ ;
+
+CREATE OR ALTER trigger analytics_pesquisa for pesquisa
+active before update position 10
+AS
+DECLARE VARIABLE TERMINAL INTEGER;
+DECLARE VARIABLE SCRIPT VARCHAR(4096);
+DECLARE VARIABLE DISTRIBUIDOR VARCHAR(18);
+BEGIN
+    IF ((NEW.FINALIZADA <> OLD.FINALIZADA) AND (NEW.IDORIGEM IS NOT NULL)) THEN
+    BEGIN
+        FOR
+            SELECT TERMINAL.CODIGO, FILIAL.CNPJ
+            FROM TERMINAL
+            INNER JOIN FILIAL ON FILIAL.CODIGO = TERMINAL.FILIAL AND FILIAL.CODIGO = NEW.FILIAL
+            WHERE ((NEW.REPLICAR = 'S') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'N'))
+            OR ((NEW.REPLICAR = 'C') AND (TERMINAL.ATIVO = 'S') AND (TERMINAL.TIPOREPLICACAO = 'A') AND (TERMINAL.ENVIARCARGA = 'S'))
+            INTO :TERMINAL, :DISTRIBUIDOR
+        DO BEGIN
+            SCRIPT = 'EXECUTE PROCEDURE '
+                  || 'SET_PESQUISAFINALIZADA'
+                  || '('  || NEW.IDORIGEM
+                  || ', ' || '''' || :DISTRIBUIDOR || ''''
+                  || ', ' || '''' || NEW.FINALIZADA || ''''
+                  || ')';
+            INSERT INTO SCRIPTSQL(SCRIPTSQL.TERMINAL, SCRIPTSQL.SCRIPT) VALUES (:TERMINAL, :SCRIPT);
+        END
+    END
+END^
+
+SET TERM ; ^
+
+
+
+
+
+
+
+
