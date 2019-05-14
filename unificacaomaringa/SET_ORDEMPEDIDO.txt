@@ -1,0 +1,35 @@
+﻿SET TERM ^ ;
+
+create or alter procedure cus_setordempedido (
+    idpedido char(36),
+    numero integer,
+    filial integer,
+    ordem varchar(15),
+    vcto date,
+    valor numeric(8,2),
+    enviar varchar(1))
+as
+BEGIN
+    INSERT INTO ORDEMPEDIDO
+    (
+        IDPEDIDO,
+        NUMERO,
+        FILIAL,
+        ORDEM,
+        VCTO,
+        VALOR,
+        ENVIAR
+    ) VALUES
+    (
+        CHAR_TO_UUID(:IDPEDIDO),
+        :NUMERO,
+        :FILIAL,
+        :ORDEM,
+        :VCTO,
+        :VALOR,
+        :ENVIAR
+    );
+END^
+
+SET TERM ; ^
+
