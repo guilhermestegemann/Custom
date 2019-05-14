@@ -1,6 +1,7 @@
 ﻿SET TERM ^ ;
 
 CREATE OR ALTER procedure cus_setpedido (
+    id char(36),
     numero integer,
     filial integer,
     clifor varchar(18),
@@ -64,6 +65,7 @@ BEGIN
     INTO :VARCLIFOR;
     INSERT INTO PEDIDO
     (
+        ID,
         NUMERO,
         FILIAL,
         CLIFOR,
@@ -118,6 +120,7 @@ BEGIN
         DUPFILIAL
     ) VALUES
     (
+        CHAR_TO_UUID(:ID),
         :NUMERO,
         :FILIAL,
         :VARCLIFOR,
