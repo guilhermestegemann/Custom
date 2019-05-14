@@ -1,6 +1,7 @@
 ﻿SET TERM ^ ;
 
 CREATE OR ALTER procedure cus_setnf (
+    idpedido char(36),
     numero integer,
     serie varchar(5),
     filial integer,
@@ -110,6 +111,7 @@ BEGIN
     INTO :VARCLIFOR;
     INSERT INTO NF
     (
+		IDPEDIDO,
         NUMERO,
         SERIE,
         FILIAL,
@@ -210,6 +212,7 @@ BEGIN
         BASEFCPUFDEST
     ) VALUES
     (
+		CHAR_TO_UUID(:IDPEDIDO),
         :NUMERO,
         :SERIE,
         :FILIAL,
