@@ -39,12 +39,15 @@ ORDEMPEDIDO -> ver pra deletar antes de inserir
 NF
 trigger_nf_somar comentar parte que recalcula os itens
 ITEMNF
+trigger_nf_somar descomentar parte que recalcula os itens
 ORDEMNF -> ver pra deletar antes de inserir
-NFE
+NFE parei aqui mas rodei o nfe
 NFREFERENCIADA
 NFMENSAGEMFISCAL
-ITEMNFRESSARCIMENTO -> ver pra deletar antes de inserir ver se nao é inserido já
-ITEMNFDEVOLUCAO -> ABANDONA ESSA MERDA
+ITEMNFRESSARCIMENTO -> ver pra deletar antes de inserir ver se nao é inserido já -> já é inserido no insert da itemnf
+TRIGGER_ITEMNFDEVOLUCAO_ITEM - DESATIVAR
+ITEMNFDEVOLUCAO -> FAZER
+TRIGGER_ITEMNFDEVOLUCAO_ITEM - REATIVAR
 ROMANEIO
 ITEMROMANEIO
 CONTA
@@ -62,6 +65,7 @@ ALTER TRIGGER TRIGGER_CONSUMO_GERARTERMINAL ACTIVE;
 BONIFICACAO
 FALTA
 DEVOLUCAO
+RODAR ESTOQUE NOVAMENTE
 LOCAIS
 ARMAZENAMENTO
 ESTOQUEESCRITURADO
@@ -71,6 +75,7 @@ LEMBRAR DE REATIVAR CLIFORCONTATOVALIDAR
 LEMBRAR DE DESFAZER trigger_nf_somar comentar parte que recalcula os itens
 reativar trigger before delete pedido, itempedido, itempedidofatura, notafiscal
 CONFIGURAR NOSSONUMERO
+AJUSTAR GENERATOR NFREFERENCIADA
 
 Concatenações
 CAIXA -> 9999
@@ -79,6 +84,7 @@ CONFIGURACAO -> 10
 REMESSA -> 100
 ROMANEO -> 1000
 ROTA -> 100
+NFREFERENCIADA -> 1000
 
 
 

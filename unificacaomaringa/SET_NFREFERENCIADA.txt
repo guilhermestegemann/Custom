@@ -1,6 +1,7 @@
 ﻿SET TERM ^ ;
 
 CREATE OR ALTER procedure cus_setnfreferenciada (
+	codigo integer,
     numero integer,
     serie varchar(5),
     filial integer,
@@ -17,6 +18,7 @@ as
 declare variable varclifor integer;
 declare variable varnfclifor integer;
 BEGIN
+	CODIGO = 1000||:CODIGO;
     SELECT NF.CLIFOR
     FROM NF
     WHERE NF.NUMERO = :NUMERO
@@ -34,6 +36,7 @@ BEGIN
     INTO :VARNFCLIFOR;
     INSERT INTO NFREFERENCIADA
     (
+		CODIGO,
         CLIFOR,
         NFCLIFOR,
         NUMERO,
@@ -50,6 +53,7 @@ BEGIN
         MENSAGEMFISCAL
     ) VALUES
     (
+		:CODIGO,
         :VARCLIFOR,
         :VARNFCLIFOR,
         :NUMERO,

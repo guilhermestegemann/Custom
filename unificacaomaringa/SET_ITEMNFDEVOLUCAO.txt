@@ -9,9 +9,9 @@ CREATE OR ALTER procedure cus_setitemnfdevolucao (
     item integer,
     motivodevolucao integer,
     cancelado varchar(1),
-    qtdedevolvido numeric(18,3))
+    qtdedevolvido numeric(18,3),
+	nfreferenciada integer)
 as
-declare variable varnfreferenciada integer;
 declare variable varclifor integer;
 BEGIN
     SELECT NF.CLIFOR
@@ -21,16 +21,7 @@ BEGIN
     AND NF.FILIAL = :FILIAL
     AND NF.ORIGEM = :ORIGEM
     INTO :VARCLIFOR;
-    SELECT FIRST 1 NFREFERENCIADA.CODIGO
-    FROM NFREFERENCIADA
-    LEFT JOIN ITEMNFDEVOLUCAO ON ITEMNFDEVOLUCAO.NFREFERENCIADA = NFREFERENCIADA.CODIGO
-    WHERE NFREFERENCIADA.NUMERO = :NUMERO
-    AND NFREFERENCIADA.FILIAL = :FILIAL
-    AND NFREFERENCIADA.SERIE = :SERIE
-    AND NFREFERENCIADA.ORIGEM = :ORIGEM
-    AND NFREFERENCIADA.CLIFOR = :VARCLIFOR
-    AND ITEMNFDEVOLUCAO.NFREFERENCIADA IS NULL
-    INTO :VARNFREFERENCIADA;
+    nfreferenciada = 1000||:nfreferenciada;
     INSERT INTO ITEMNFDEVOLUCAO
     (
         NUMERO,
@@ -43,7 +34,8 @@ BEGIN
         CANCELADO,
         CLIFOR,
         NFREFERENCIADA,
-        QTDEDEVOLVIDO
+        QTDEDEVOLVIDO,
+		nfreferenciada
     ) VALUES
     (
         :NUMERO,
@@ -56,7 +48,8 @@ BEGIN
         :CANCELADO,
         :VARCLIFOR,
         :VARNFREFERENCIADA,
-        :QTDEDEVOLVIDO
+        :QTDEDEVOLVIDO,
+		:nfreferenciada
     );
         
 END^
