@@ -16,6 +16,7 @@ VENDEDORES MA -> 11688,2129,1921,3005
 VENDEDORES AP -> 2089,2976,264
 VENDEDOR 264(AP),11688(MA)
 FUNCIONARIO
+FUNCIONARIOCLIFOR
 ROTA SETAR FUNCIONARIO
 ROTACLIFOR
 PRODUTO -> SÓ ITEMNF
@@ -40,7 +41,7 @@ trigger_nf_somar comentar parte que recalcula os itens
 ITEMNF
 trigger_nf_somar descomentar parte que recalcula os itens
 ORDEMNF -> ver pra deletar antes de inserir
-NFE parei aqui mas rodei o nfe
+NFE 
 NFREFERENCIADA
 NFMENSAGEMFISCAL
 ITEMNFRESSARCIMENTO -> ver pra deletar antes de inserir ver se nao é inserido já -> já é inserido no insert da itemnf

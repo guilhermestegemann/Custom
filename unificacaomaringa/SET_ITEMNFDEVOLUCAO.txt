@@ -10,7 +10,7 @@ CREATE OR ALTER procedure cus_setitemnfdevolucao (
     motivodevolucao integer,
     cancelado varchar(1),
     qtdedevolvido numeric(18,3),
-	nfreferenciada integer)
+    nfreferenciada integer)
 as
 declare variable varclifor integer;
 BEGIN
@@ -34,8 +34,7 @@ BEGIN
         CANCELADO,
         CLIFOR,
         NFREFERENCIADA,
-        QTDEDEVOLVIDO,
-		nfreferenciada
+        QTDEDEVOLVIDO
     ) VALUES
     (
         :NUMERO,
@@ -47,12 +46,10 @@ BEGIN
         :MOTIVODEVOLUCAO,
         :CANCELADO,
         :VARCLIFOR,
-        :VARNFREFERENCIADA,
-        :QTDEDEVOLVIDO,
-		:nfreferenciada
+        :NFREFERENCIADA,
+        :QTDEDEVOLVIDO
     );
         
 END^
 
 SET TERM ; ^
-
