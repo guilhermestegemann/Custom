@@ -3,10 +3,12 @@ unit UFrmPrincipalService;
 interface
 
 uses
-  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.SvcMgr, Vcl.Dialogs;
+  Winapi.Windows, Winapi.Messages, System.SysUtils, System.Classes, Vcl.Graphics, Vcl.Controls, Vcl.SvcMgr, Vcl.Dialogs,
+  Vcl.ExtCtrls;
 
 type
   TBackup = class(TService)
+    Timer: TTimer;
   private
     { Private declarations }
   public

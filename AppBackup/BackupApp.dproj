@@ -104,6 +104,12 @@
         </DCCReference>
         <DCCReference Include="Uteis\UVerificaTempoExecucao.pas"/>
         <DCCReference Include="Interfaces\UIInterface.Executa.pas"/>
+        <DCCReference Include="Classes\UConfig.pas"/>
+        <DCCReference Include="Classes\UCarregaConfig.pas"/>
+        <DCCReference Include="Classes\UExecutaBackup.pas"/>
+        <DCCReference Include="Classes\UCriaPastasIniciais.pas"/>
+        <DCCReference Include="Classes\UConstantes.pas"/>
+        <DCCReference Include="Classes\UGeraNiveisBackup.pas"/>
         <BuildConfiguration Include="Release">
             <Key>Cfg_2</Key>
             <CfgParent>Base</CfgParent>
