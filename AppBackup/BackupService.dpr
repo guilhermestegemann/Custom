@@ -3,8 +3,14 @@ program BackupService;
 uses
   Vcl.SvcMgr,
   UFrmPrincipalService in 'UFrmPrincipalService.pas' {Backup: TService},
+  UVerificaTempoExecucao in 'Uteis\UVerificaTempoExecucao.pas',
   UIInterface.Executa in 'Interfaces\UIInterface.Executa.pas',
-  UVerificaTempoExecucao in 'Uteis\UVerificaTempoExecucao.pas';
+  UCarregaConfig in 'Classes\UCarregaConfig.pas',
+  UConfig in 'Classes\UConfig.pas',
+  UConstantes in 'Classes\UConstantes.pas',
+  UCriaPastasIniciais in 'Classes\UCriaPastasIniciais.pas',
+  UExecutaBackup in 'Classes\UExecutaBackup.pas',
+  UGeraNiveisBackup in 'Classes\UGeraNiveisBackup.pas';
 
 {$R *.RES}
 

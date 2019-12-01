@@ -1,11 +1,13 @@
 object Backup: TBackup
   OldCreateOrder = False
   DisplayName = 'BackupService'
+  OnStart = ServiceStart
+  OnStop = ServiceStop
   Height = 150
   Width = 215
   object Timer: TTimer
-    Enabled = False
     Interval = 5000
+    OnTimer = TimerTimer
     Left = 96
     Top = 64
   end

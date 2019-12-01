@@ -30,8 +30,12 @@ end;
 
 procedure TGeraNiveisBackup.Executar;
 begin
-  WinExec(PAnsiChar(AnsiString(Self.GetComando())),SW_NORMAL);
-  Self.FConfig.DataUltimaCompra := Now;
+  if Self.FConfig.EstaNaHora() then
+  begin
+    WinExec(PAnsiChar(AnsiString(Self.GetComando())),SW_NORMAL);
+    //TExecuta.GetInstancia().Executar();
+    Self.FConfig.DataUltimaCopia := Now;
+  end;
 end;
 
 

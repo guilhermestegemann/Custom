@@ -13,15 +13,18 @@ type TConfig = class(TObject)
     FBaseDados : String;
     FDiretoriosCopias : TStringList;
     FDataUltimaCopia : TDate;
+    FTempoTimer: Integer;
     function ValidarHora(AValue : String) : TTime;
     procedure SetPathInstalacaoFirebird(const Value: String);
+    procedure SetTempoTimer(const Value: Integer);
   public
     property HoraInicio : TTime read FHoraInicio;
     property HoraFim : TTime read FHoraFim;
     property PathInstalacaoFirebird : String read FPathInstalacaoFirebird write SetPathInstalacaoFirebird;
     property BaseDados : String read FBaseDados write FBaseDados;
     property DiretoriosCopias : TStringList read FDiretoriosCopias write FDiretoriosCopias;
-    property DataUltimaCompra : TDate read FDataUltimaCopia write FDataUltimaCopia;
+    property DataUltimaCopia : TDate read FDataUltimaCopia write FDataUltimaCopia;
+    property TempoTimer : Integer read FTempoTimer write SetTempoTimer;
     procedure SetHoraInicio(AValue : String);
     procedure SetHoraFim(AValue : String);
     function EstaNaHora : Boolean;
@@ -48,7 +51,7 @@ end;
 
 function TConfig.EstaNaHora: Boolean;
 begin
-  Result := ((Time >= Self.FHoraInicio) and (Time <= Self.FHoraFim) and (Now > Self.FDataUltimaCopia));
+  Result := ((Time >= Self.FHoraInicio) and (Time <= Self.FHoraFim) and (Date > Self.FDataUltimaCopia));
 end;
 
 procedure TConfig.SetHoraFim(AValue: String);
@@ -64,6 +67,11 @@ end;
 procedure TConfig.SetPathInstalacaoFirebird(const Value: String);
 begin
   Self.FPathInstalacaoFirebird := IncludeTrailingBackslash(Value);
+end;
+
+procedure TConfig.SetTempoTimer(const Value: Integer);
+begin
+  FTempoTimer := Value * 60000;
 end;
 
 function TConfig.ValidarHora(AValue: String): TTime;
