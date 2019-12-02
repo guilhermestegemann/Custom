@@ -51,7 +51,7 @@ end;
 procedure TForm1.CarregarConfig;
 begin
   TExecuta.GetInstancia(TCarregaConfig.Create(Self.FConfig)).Executar();
-  //Timer.Interval := Self.FConfig.TempoTimer;
+  Timer.Interval := Self.FConfig.TempoTimer;
 end;
 
 procedure TForm1.FormCreate(Sender: TObject);

@@ -10,7 +10,9 @@ uses
   UExecutaBackup in 'Classes\UExecutaBackup.pas',
   UCriaPastasIniciais in 'Classes\UCriaPastasIniciais.pas',
   UConstantes in 'Classes\UConstantes.pas',
-  UGeraNiveisBackup in 'Classes\UGeraNiveisBackup.pas';
+  UGeraNiveisBackup in 'Classes\UGeraNiveisBackup.pas',
+  UCompactaArquivo in 'Classes\UCompactaArquivo.pas',
+  UCopiaArquivo in 'Classes\UCopiaArquivo.pas';
 
 {$R *.res}
 

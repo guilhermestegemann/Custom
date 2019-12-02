@@ -43,7 +43,7 @@ procedure TBackup.ServiceStart(Sender: TService; var Started: Boolean);
 begin
   Self.FConfig := TConfig.Create();
   TExecuta.GetInstancia(TCarregaConfig.Create(Self.FConfig)).Executar();
-  //Timer.Interval := Self.FConfig.TempoTimer;
+  Timer.Interval := Self.FConfig.TempoTimer;
 end;
 
 procedure TBackup.ServiceStop(Sender: TService; var Stopped: Boolean);
