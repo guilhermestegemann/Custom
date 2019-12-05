@@ -53,8 +53,8 @@ function TGeraNiveisBackup.GetComando: String;
 begin
   Result := Self.FConfig.PathInstalacaoFirebird + TConstantes.cNBackup; //exe nbackup
   Result := Result + ' -B ' + FNivel + ' '; //ajustaNivel
-  Result := Result + Self.FConfig.BaseDados + ' '; //banco de dados
-  Result := Result + Self.FNomeArquivoBackup; //nome backup
+  Result := Result + '"' + Self.FConfig.BaseDados + '" '; //banco de dados
+  Result := Result + '"' + Self.FNomeArquivoBackup + '" '; //nome backup
   Result := Result + ' -U sysdba -P masterkey'; //usuario e senha database
 end;
 
