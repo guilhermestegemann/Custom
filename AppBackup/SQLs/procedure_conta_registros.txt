@@ -1,0 +1,27 @@
+SET TERM ^ ;
+
+CREATE OR ALTER procedure cus_proc_conta_reg 
+returns (
+    tabela varchar(48),
+    registros bigint)
+as
+declare variable vsql varchar(1024);
+begin
+    FOR
+        SELECT RDB$RELATION_NAME AS TABELA
+        FROM RDB$RELATIONS
+        WHERE ((RDB$SYSTEM_FLAG = 0) OR (RDB$SYSTEM_FLAG IS NULL))
+        AND (RDB$VIEW_SOURCE IS NULL)
+        AND NOT (RDB$RELATION_NAME LIKE '%$%')
+        ORDER BY RDB$RELATION_NAME
+        INTO :TABELA
+    DO BEGIN
+        REGISTROS = 0;
+        VSQL = 'SELECT COUNT(*) FROM ' || :TABELA;
+        EXECUTE STATEMENT :VSQL INTO :REGISTROS;
+        SUSPEND;
+    END
+end^
+
+SET TERM ; ^
+
