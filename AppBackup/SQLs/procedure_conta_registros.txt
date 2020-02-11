@@ -3,10 +3,12 @@ SET TERM ^ ;
 CREATE OR ALTER procedure cus_proc_conta_reg 
 returns (
     tabela varchar(48),
-    registros bigint)
+    registros bigint,
+	totalregistros bigint)
 as
 declare variable vsql varchar(1024);
 begin
+	totalregistros = 0;
     FOR
         SELECT RDB$RELATION_NAME AS TABELA
         FROM RDB$RELATIONS
@@ -19,6 +21,7 @@ begin
         REGISTROS = 0;
         VSQL = 'SELECT COUNT(*) FROM ' || :TABELA;
         EXECUTE STATEMENT :VSQL INTO :REGISTROS;
+		totalregistros = :totalregistros + :registros;
         SUSPEND;
     END
 end^
