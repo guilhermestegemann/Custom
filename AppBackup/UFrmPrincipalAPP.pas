@@ -35,10 +35,10 @@ uses
 
 procedure TForm1.ButtonStartClick(Sender: TObject);
 begin
+  Self.CarregarConfig();
   Timer.Enabled := True;
   ButtonStart.Enabled := False;
   ButtonStop.Enabled := True;
-  Self.CarregarConfig();
 end;
 
 procedure TForm1.ButtonStopClick(Sender: TObject);

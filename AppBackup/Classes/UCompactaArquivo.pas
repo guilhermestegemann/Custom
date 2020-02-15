@@ -62,19 +62,19 @@ end;
 
 function TCompactaArquivo.ExtractName(const Filename: String): String;
 var
-LExt : String;
-LPos : Integer;
+  LExt : String;
+  LPos : Integer;
 begin
-LExt := ExtractFileExt(Filename);
-Result := ExtractFileName(Filename);
-if LExt <> '' then
-   begin
-   LPos := Pos(LExt,Result);
-   if LPos > 0 then
-      begin
+  LExt := ExtractFileExt(Filename);
+  Result := ExtractFileName(Filename);
+  if LExt <> '' then
+  begin
+    LPos := Pos(LExt,Result);
+    if LPos > 0 then
+    begin
       Delete(Result,LPos,Length(LExt));
-      end;
-   end;
+    end;
+  end;
 end;
 
 end.
