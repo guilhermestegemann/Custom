@@ -20,7 +20,7 @@ type
 implementation
 
 uses
-  System.Zip;
+  ZipMstr;
 
 const
   cExtensaoZip = '.zip';
@@ -45,18 +45,18 @@ end;
 
 procedure TCompactaArquivo.CompactarArquivo(AZipFile, AFileName: String);
 var
-  Zip: TZipFile;
+  ZipMaster: TZipMaster;
 begin
-  Zip := TZipFile.Create;
+  ZipMaster := TZipMaster.Create(nil);
   try
-    if FileExists(AZipFile) then
-      Zip.Open(AZipFile, zmReadWrite)
-    else
-      Zip.Open(AZipFile, zmWrite);
-    Zip.Add(AFileName, extractFileName(AFileName));
-    Zip.Close;
+    ZipMaster.Active := True;
+    ZipMaster.DLLDirectory := GetCurrentDir + '\dll';
+    ZipMaster.ZipFilename  := AZipFile;
+    ZipMaster.FSpecArgs.Clear();
+    ZipMaster.FSpecArgs.Add(AFileName);
+    ZipMaster.Add();
   finally
-    Zip.Free;
+    ZipMaster.Free;
   end;
 end;
 
