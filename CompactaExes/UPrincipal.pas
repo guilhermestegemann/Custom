@@ -224,7 +224,7 @@ end;
 
 procedure TFrmPrincipal.Upar;
 begin
-  //Self.ValidarTicket();
+  Self.ValidarTicket();
   Self.ConectarFTP();
   FTP.ChangeDir(EditPasta.Text);
   try
