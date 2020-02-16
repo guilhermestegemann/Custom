@@ -12,7 +12,8 @@ uses
   UExecutaBackup in 'Classes\UExecutaBackup.pas',
   UGeraNiveisBackup in 'Classes\UGeraNiveisBackup.pas',
   UCompactaArquivo in 'Classes\UCompactaArquivo.pas',
-  UCopiaArquivo in 'Classes\UCopiaArquivo.pas';
+  UCopiaArquivo in 'Classes\UCopiaArquivo.pas',
+  UEnvioFTP in 'Classes\UEnvioFTP.pas';
 
 {$R *.RES}
 

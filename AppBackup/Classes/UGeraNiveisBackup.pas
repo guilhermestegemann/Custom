@@ -35,12 +35,13 @@ procedure TGeraNiveisBackup.Executar;
 begin
   if Self.FConfig.EstaNaHora() then
   begin
+    Self.FConfig.DataInicioBackup := Now;
     WinExec(PAnsiChar(AnsiString(Self.GetComando())),SW_NORMAL);
     while Self.VerificarArquivoEmUso() do
     begin
-      Sleep(60000);
+      Sleep(6000);
     end;
-    TExecuta.GetInstancia(TCompactaArquivo.Create(Self.FNomeArquivoBackup)).Executar();
+    TExecuta.GetInstancia(TCompactaArquivo.Create(Self.FNomeArquivoBackup, Self.FConfig, Self.FNivel)).Executar();
     TExecuta.GetInstancia(TCopiaArquivo.Create(Self.FConfig, Self.FNomeArquivoBackup)).Executar();
     Self.FConfig.DataUltimaCopia := Now;
   end;

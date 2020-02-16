@@ -13,7 +13,10 @@ type TConfig = class(TObject)
     FBaseDados : String;
     FDiretoriosCopias : TStringList;
     FDataUltimaCopia : TDate;
+    FDataInicioBackup : TDate;
     FTempoTimer: Integer;
+    FCNPJ : String;
+    FHostFTP : String;
     function ValidarHora(AValue : String) : TTime;
     procedure SetPathInstalacaoFirebird(const Value: String);
     procedure SetTempoTimer(const Value: Integer);
@@ -24,10 +27,15 @@ type TConfig = class(TObject)
     property BaseDados : String read FBaseDados write FBaseDados;
     property DiretoriosCopias : TStringList read FDiretoriosCopias write FDiretoriosCopias;
     property DataUltimaCopia : TDate read FDataUltimaCopia write FDataUltimaCopia;
+    property DataInicioBackup : TDate read FDataInicioBackup write FDataInicioBackup;
     property TempoTimer : Integer read FTempoTimer write SetTempoTimer;
+    property CNPJ : String read FCNPJ write FCNPJ;
+    property HostFTP : String read FHostFTP write FHostFTP;
     procedure SetHoraInicio(AValue : String);
     procedure SetHoraFim(AValue : String);
     function EstaNaHora : Boolean;
+    function GetDataInicioBackupString : String;
+    function GetDataInicioBackupAnteriorString : String;
     constructor Create;
     destructor Destroy; override;
 end;
@@ -54,6 +62,16 @@ begin
   Result := ((Time >= Self.FHoraInicio) and (Time <= Self.FHoraFim) and (Date > Self.FDataUltimaCopia));
 end;
 
+function TConfig.GetDataInicioBackupAnteriorString: String;
+begin
+  Result := FormatDateTime('DDMMYYY', Self.FDataInicioBackup -1);
+end;
+
+function TConfig.GetDataInicioBackupString: String;
+begin
+  Result := FormatDateTime('DDMMYYY', Self.FDataInicioBackup);
+end;
+
 procedure TConfig.SetHoraFim(AValue: String);
 begin
   Self.FHoraFim := Self.ValidarHora(AValue);
@@ -71,7 +89,7 @@ end;
 
 procedure TConfig.SetTempoTimer(const Value: Integer);
 begin
-  FTempoTimer := Value * 60000;
+  FTempoTimer := Value * 6000;
 end;
 
 function TConfig.ValidarHora(AValue: String): TTime;

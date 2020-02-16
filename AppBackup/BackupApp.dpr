@@ -12,7 +12,9 @@ uses
   UConstantes in 'Classes\UConstantes.pas',
   UGeraNiveisBackup in 'Classes\UGeraNiveisBackup.pas',
   UCompactaArquivo in 'Classes\UCompactaArquivo.pas',
-  UCopiaArquivo in 'Classes\UCopiaArquivo.pas';
+  UCopiaArquivo in 'Classes\UCopiaArquivo.pas',
+  UBackup in 'Classes\UBackup.pas',
+  UEnvioFTP in 'Classes\UEnvioFTP.pas';
 
 {$R *.res}
 

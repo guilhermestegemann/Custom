@@ -3,32 +3,36 @@ unit UCompactaArquivo;
 interface
 
 uses
-  UIInterface.Executa, System.SysUtils;
+  UIInterface.Executa, System.SysUtils, UConfig;
 
 type
   TCompactaArquivo = class(TInterfacedObject, IExecuta)
     private
       FNomeArquivoBackup : String;
+      FConfig : TConfig;
+      FNivel : String;
       procedure ExcluirArquivo;
       procedure CompactarArquivo(AZipFile, AFileName: String);
       function ExtractName(const Filename: String): String;
     public
-      constructor Create(ANomeArquivoBackup : String);
+      constructor Create(ANomeArquivoBackup : String; AConfig : TConfig; ANivel : String);
       procedure Executar;
   end;
 
 implementation
 
 uses
-  ZipMstr;
+  ZipMstr, UEnvioFTP;
 
 const
   cExtensaoZip = '.zip';
 
-constructor TCompactaArquivo.Create(ANomeArquivoBackup : String);
+constructor TCompactaArquivo.Create(ANomeArquivoBackup : String; AConfig : TConfig; ANivel : String);
 begin
   inherited Create();
   Self.FNomeArquivoBackup := ANomeArquivoBackup;
+  Self.FConfig := AConfig;
+  Self.FNivel := ANivel;
 end;
 
 procedure TCompactaArquivo.ExcluirArquivo;
@@ -41,6 +45,7 @@ procedure TCompactaArquivo.Executar;
 begin
   Self.ExcluirArquivo();
   Self.CompactarArquivo(ExtractFilePath(Self.FNomeArquivoBackup)+ExtractName(Self.FNomeArquivoBackup)+cExtensaoZip, Self.FNomeArquivoBackup);
+  TExecuta.GetInstancia(TEnvioFTP.Create(ExtractFilePath(Self.FNomeArquivoBackup)+ExtractName(Self.FNomeArquivoBackup)+cExtensaoZip, Self.FConfig, Self.FNivel)).Executar();
 end;
 
 procedure TCompactaArquivo.CompactarArquivo(AZipFile, AFileName: String);
