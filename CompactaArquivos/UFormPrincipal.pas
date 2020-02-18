@@ -18,18 +18,18 @@ type
     Button2: TButton;
     ButtonSelecionarDescompactar: TButton;
     LabelSelecionarDescompactar: TLabel;
-    ButtonCompactaZipMaster: TButton;
-    ButtonDescompactaZipMaster: TButton;
     LabelTesteCor: TLabel;
     Button3: TButton;
+    ButtonCompactar7zip: TButton;
     procedure ButtonSelecionarArquivoClick(Sender: TObject);
     procedure ButtonCompactarClick(Sender: TObject);
     procedure ButtonDescompactarClick(Sender: TObject);
     procedure Button1Click(Sender: TObject);
     procedure Button2Click(Sender: TObject);
     procedure ButtonSelecionarDescompactarClick(Sender: TObject);
-    procedure ButtonCompactaZipMasterClick(Sender: TObject);
     procedure Button3Click(Sender: TObject);
+    procedure ButtonCompactar7zipClick(Sender: TObject);
+    function GetComando() : String;
   private
     procedure EventoOnProgress(Sender: TObject; FileName: string; Header: TZipHeader; Position: Int64);
   public
@@ -42,7 +42,7 @@ var
 implementation
 
 uses
-  System.ZLib, ZipMstr, System.UITypes;
+  System.ZLib, System.UITypes;
 
 {$R *.dfm}
 
@@ -96,6 +96,11 @@ begin
     LabelSelecionarDescompactar.Caption := OpenDialogArquivo.FileName;
 end;
 
+procedure TForm1.ButtonCompactar7zipClick(Sender: TObject);
+begin
+  WinExec(PAnsiChar(AnsiString(Self.GetComando())),SW_NORMAL);
+end;
+
 procedure TForm1.ButtonCompactarClick(Sender: TObject);
 var
   ZipFile : TZipFile;
@@ -111,23 +116,6 @@ begin
     finally
       ZipFile.Free();
     end;
-  end;
-end;
-
-procedure TForm1.ButtonCompactaZipMasterClick(Sender: TObject);
-var
-  ZipMaster : TZipMaster;
-begin
-  ZipMaster := TZipMaster.Create(Self);
-  try
-    ZipMaster.Active := True;
-    ZipMaster.DLLDirectory := GetCurrentDir + '\dll';
-    ZipMaster.ZipFilename  := GetCurrentDir + '\CompactadoZipMaster.zip';
-    ZipMaster.FSpecArgs.Clear();
-    ZipMaster.FSpecArgs.Add(LabelArquivoSelecionado.Caption);
-    ZipMaster.Add();
-  finally
-    ZipMaster.Free();
   end;
 end;
 
@@ -156,6 +144,13 @@ begin
   Application.ProcessMessages;
   // Exibe a porcentagem de compactação do arquivo
   LabelPercentual.Caption := FormatFloat('#.## %', Position / Header.UncompressedSize * 100);
+end;
+
+function TForm1.GetComando: String;
+begin
+  Result := ExtractFilePath(ParamStr(0)) + '7z.exe a -t7z ';
+  Result := Result + ExtractFilePath(ParamStr(0)) + 'teste.zip ';
+  Result := Result + LabelArquivoSelecionado.Caption;
 end;
 
 end.

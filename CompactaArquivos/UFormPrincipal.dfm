@@ -98,31 +98,23 @@ object Form1: TForm1
     TabOrder = 5
     OnClick = ButtonSelecionarDescompactarClick
   end
-  object ButtonCompactaZipMaster: TButton
-    Left = 96
-    Top = 256
-    Width = 123
-    Height = 25
-    Caption = 'Compacta Zip Master'
-    TabOrder = 6
-    OnClick = ButtonCompactaZipMasterClick
-  end
-  object ButtonDescompactaZipMaster: TButton
-    Left = 257
-    Top = 256
-    Width = 160
-    Height = 25
-    Caption = 'Descompacta Zip Master'
-    TabOrder = 7
-  end
   object Button3: TButton
     Left = 560
     Top = 344
     Width = 113
     Height = 25
     Caption = 'muda cor navy'
-    TabOrder = 8
+    TabOrder = 6
     OnClick = Button3Click
+  end
+  object ButtonCompactar7zip: TButton
+    Left = 112
+    Top = 224
+    Width = 129
+    Height = 25
+    Caption = 'Compactar 7Zip'
+    TabOrder = 7
+    OnClick = ButtonCompactar7zipClick
   end
   object OpenDialogArquivo: TOpenDialog
     Left = 48
