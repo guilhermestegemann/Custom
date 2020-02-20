@@ -39,7 +39,7 @@ begin
     WinExec(PAnsiChar(AnsiString(Self.GetComando())),SW_NORMAL);
     while Self.VerificarArquivoEmUso() do
     begin
-      Sleep(6000);
+      Sleep(60000);
     end;
     TExecuta.GetInstancia(TCompactaArquivo.Create(Self.FNomeArquivoBackup, Self.FConfig, Self.FNivel)).Executar();
     TExecuta.GetInstancia(TCopiaArquivo.Create(Self.FConfig, Self.FNomeArquivoBackup)).Executar();

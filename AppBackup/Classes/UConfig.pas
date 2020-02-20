@@ -89,7 +89,7 @@ end;
 
 procedure TConfig.SetTempoTimer(const Value: Integer);
 begin
-  FTempoTimer := Value * 6000;
+  FTempoTimer := Value * 60000;
 end;
 
 function TConfig.ValidarHora(AValue: String): TTime;

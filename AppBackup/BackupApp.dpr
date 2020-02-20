@@ -14,7 +14,8 @@ uses
   UCompactaArquivo in 'Classes\UCompactaArquivo.pas',
   UCopiaArquivo in 'Classes\UCopiaArquivo.pas',
   UBackup in 'Classes\UBackup.pas',
-  UEnvioFTP in 'Classes\UEnvioFTP.pas';
+  UEnvioFTP in 'Classes\UEnvioFTP.pas',
+  UExecutaComando in 'Classes\UExecutaComando.pas';
 
 {$R *.res}
 
