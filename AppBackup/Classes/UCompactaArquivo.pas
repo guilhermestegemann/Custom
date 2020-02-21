@@ -68,8 +68,8 @@ begin
   LComando := TStringList.Create();
   try
     LComando.Add(ExtractFilePath(ParamStr(0)) + '7z.exe a -t7z ');
-    LComando.Add(AZipFile + ' ');
-    LComando.Add(AFileName + ' ');
+    LComando.Add(' "' + AZipFile + '" ');
+    LComando.Add(' "' + AFileName + '" ');
     TExecuta.GetInstancia(TExecutaComando.Create(LComando)).Executar();
     while Self.VerificarArquivoEmUso(AZipFile) do
     begin
