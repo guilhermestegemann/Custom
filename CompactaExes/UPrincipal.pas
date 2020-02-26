@@ -258,6 +258,7 @@ begin
       Application.ProcessMessages();
       FTP.Put(ExtractFileDir(ParamStr(0))+'\'+cServerERPZIP, cServerERPZip, False);
     end;
+    StaticTextStatus.Caption := 'Concluído';
   finally
     Self.DesconectarFTP();
   end;
